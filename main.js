@@ -1,6 +1,9 @@
 import './style.css'
 
-let canvas = document.getElementById("canvas");
+import rough from 'roughjs';
+
+const canvas = document.getElementById("canvas");
+const rc = rough.canvas(canvas);
 
 function setSize(height, width) {
   canvas.height = height;
