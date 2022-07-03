@@ -5,7 +5,7 @@ const canvas = document.getElementById("canvas");
 const context = canvas.getContext('2d');
 const rc = rough.canvas(canvas);
 
-let circleDiameter = 8;
+let circleDiameter = 5;
 let circleSpacing = 2;
 
 let options = {
@@ -18,9 +18,17 @@ let options = {
 let x = 0;
 let y = 0;
 
+function drawWave() {
+  for (let i = 0, y = circleSpacing + circleDiameter/2; y < canvas.height; i += 1, y += circleSpacing + circleDiameter) {
+    for (let j = 0, x = circleSpacing + circleDiameter/2; x < canvas.width; j += 1, x += Math.pow(((Math.sin(0.075 * j) + 1)/2)+1, 2) * circleSpacing + circleDiameter) {
+      rc.circle(x, y, circleDiameter, options);
+    }
+  }
+}
+
 function drawUniform() {
-  for (y = circleSpacing + circleDiameter/2; y < canvas.height; y += circleSpacing + circleDiameter) {
-    for (x = circleSpacing + circleDiameter/2; x < canvas.width; x += circleSpacing + circleDiameter) {
+  for (let i = 0, y = circleSpacing + circleDiameter/2; y < canvas.height; i += 1, y += circleSpacing + circleDiameter) {
+    for (let j = 0, x = circleSpacing + circleDiameter/2; x < canvas.width; j += 1, x += circleSpacing + circleDiameter) {
       rc.circle(x, y, circleDiameter, options);
     }
   }
@@ -40,7 +48,7 @@ function init() {
   setSize(window.innerHeight, window.innerWidth);
   window.onresize = windowResize;
 
-  drawUniform();
+  drawWave();
 }
 
 init();
