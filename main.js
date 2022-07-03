@@ -1,6 +1,19 @@
 import './style.css'
 
-document.querySelector('#app').innerHTML = `
-  <h1>Hello Vite!</h1>
-  <a href="https://vitejs.dev/guide/features.html" target="_blank">Documentation</a>
-`
+let canvas = document.getElementById("canvas");
+
+function setSize(height, width) {
+  canvas.height = height;
+  canvas.width = width;
+}
+
+function windowResize() {
+  setSize(window.innerHeight, window.innerWidth);
+}
+
+function init() {
+  setSize(window.innerHeight, window.innerWidth);
+  window.onresize = windowResize;
+}
+
+init();
