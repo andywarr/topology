@@ -1,6 +1,9 @@
 import './style.css'
 import rough from 'roughjs';
 
+let pixelsPerInch = 300;
+let height =  30 * pixelsPerInch;
+let width = 40 * pixelsPerInch;
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext('2d');
 const rc = rough.canvas(canvas);
@@ -39,14 +42,15 @@ function setSize(height, width) {
   canvas.width = width;
 }
 
-function windowResize() {
-  setSize(window.innerHeight, window.innerWidth);
-  drawUniform();
-}
+// function windowResize() {
+//   setSize(window.innerHeight, window.innerWidth);
+//   drawUniform();
+// }
 
 function init() {
-  setSize(window.innerHeight, window.innerWidth);
-  window.onresize = windowResize;
+  //setSize(window.innerHeight, window.innerWidth);
+  setSize(height, width);
+  // window.onresize = windowResize;
 
   drawWave();
 }
