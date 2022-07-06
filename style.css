@@ -1,8 +1,9 @@
 body {
+  background-color: #fefefe;
   height: calc(100% - 200px);
   margin: 0;
   padding: 100px;
-  padding-right: 300px;
+  padding-right: 400px;
   position: relative;
   width: auto;
 }
