@@ -1,11 +1,29 @@
 import './style.css'
+import Panzoom from '@panzoom/panzoom'
 import rough from 'roughjs';
 
 let pixelsPerInch = 300;
-let height =  30 * pixelsPerInch;
-let width = 40 * pixelsPerInch;
-const canvas = document.getElementById("canvas");
-const context = canvas.getContext('2d');
+let height =  8 * pixelsPerInch;
+let width = 11 * pixelsPerInch;
+
+const canvas = document.getElementById('canvas');
+
+const panzoom = Panzoom(canvas, {
+  contain: 'outside',
+  handleStartEvent: (event) => {
+    event.preventDefault()
+  },
+  maxScale: 1,
+});
+
+// Bind to mousewheel
+canvas.addEventListener('wheel', panzoom.zoomWithWheel)
+// Bind to shift+mousewheel
+canvas.addEventListener('wheel', function (event) {
+  if (!event.shiftKey) return
+  panzoom.zoomWithWheel(event)
+});
+
 const rc = rough.canvas(canvas);
 
 let circleDiameter = 5;
@@ -20,6 +38,14 @@ let options = {
 
 let x = 0;
 let y = 0;
+
+function calcOrigin() {
+  return `${(window.innerWidth - (width*calcStartScale()))/2}px 0px`
+}
+
+function calcStartScale() {
+  return Math.min(window.innerHeight/height, window.innerWidth/width);
+}
 
 function drawWave() {
   for (let i = 0, y = circleSpacing + circleDiameter/2; y < canvas.height; i += 1, y += circleSpacing + circleDiameter) {
