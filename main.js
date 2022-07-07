@@ -16,6 +16,8 @@ const panzoom = Panzoom(canvas, {
   maxScale: 1,
 });
 
+console.log(calcStartScale());
+
 // Bind to mousewheel
 canvas.addEventListener('wheel', panzoom.zoomWithWheel)
 // Bind to shift+mousewheel
@@ -39,12 +41,9 @@ let options = {
 let x = 0;
 let y = 0;
 
-function calcOrigin() {
-  return `${(window.innerWidth - (width*calcStartScale()))/2}px 0px`
-}
-
 function calcStartScale() {
-  return Math.min(window.innerHeight/height, window.innerWidth/width);
+  return Math.max(document.getElementById('canvas-wrapper').clientHeight/height,
+    document.getElementById('canvas-wrapper').clientWidth/width);
 }
 
 function drawWave() {
@@ -79,6 +78,8 @@ function init() {
   // window.onresize = windowResize;
 
   drawWave();
+
+  setTimeout(() => panzoom.zoom(calcStartScale()))
 }
 
 init();
