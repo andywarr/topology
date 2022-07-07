@@ -79,6 +79,7 @@ function init() {
 
   drawWave();
 
+  // Adding a timeout because in order for Panzoom to retrieve proper Zoom the canvas needs to be painted
   setTimeout(() => panzoom.zoom(calcStartScale()))
 }
 
