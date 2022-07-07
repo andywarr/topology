@@ -3,9 +3,24 @@ body {
   height: calc(100% - 200px);
   margin: 0;
   padding: 100px;
-  padding-right: 400px;
+  padding-right: 100px;
   position: relative;
   width: auto;
+}
+
+#canvas-wrapper {
+  flex: 3;
+  height: 100%;
+}
+
+#container {
+  align-content: flex-start;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
 }
 
 html {
@@ -13,9 +28,8 @@ html {
   width: 100vw;
 }
 
-#canvas-wrapper {
+#info-wrapper {
+  flex: 1;
   height: 100%;
-  overflow: hidden;
-  position: relative;
-  width: 100%;
+  padding-left: 10px;
 }
