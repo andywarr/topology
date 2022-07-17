@@ -1,4 +1,5 @@
 import './style.css';
+import config from './config'
 import { Loader } from '@googlemaps/js-api-loader';
 import Panzoom from '@panzoom/panzoom';
 import rough from 'roughjs';
@@ -14,7 +15,7 @@ const sanFrancisco = {lat: 37.7749, lng: 122.4194};
 const zoom = 10;
 
 const loader = new Loader({
-  apiKey: "AIzaSyCQpkTMIlOMhr5WivDDyUZn-d9kchQ7Sk4",
+  apiKey: config.API_TOKEN,
   version: "weekly",
   libraries: ["places"]
 });
