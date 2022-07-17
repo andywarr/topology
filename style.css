@@ -40,5 +40,10 @@ html {
 }
 
 #map {
+  height: 100vh;
+  left: 0;
+  position: absolute !important;
+  top: 0;
   visibility: hidden;
+  width: 100vw;
 }

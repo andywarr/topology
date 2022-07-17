@@ -12,7 +12,7 @@ let width = 11 * pixelsPerInch;
 // Map properties
 const mapTypeId = "terrain";
 const sanFrancisco = {lat: 37.7749, lng: 122.4194};
-const zoom = 10;
+const zoom = 12;
 
 const loader = new Loader({
   apiKey: config.API_TOKEN,
@@ -106,10 +106,23 @@ init();
 loader
   .load()
   .then((google) => {
-    new google.maps.Map(document.getElementById("map"), {
+    const map = new google.maps.Map(document.getElementById("map"), {
       zoom,
       center: sanFrancisco,
       mapTypeId,
+    });
+    const elevator = new google.maps.ElevationService();
+
+    // const bounds = map.getBounds();
+    // console.log(bounds);
+
+    google.maps.event.addListener(map, 'bounds_changed', function() {
+      const bounds = map.getBounds();
+      const southWest = {lat: bounds.getSouthWest().lat(), lng: bounds.getSouthWest().lng()};
+      const northEast = {lat: bounds.getNorthEast().lat(), lng: bounds.getNorthEast().lng()};
+      const southEast = {lat: bounds.getSouthWest().lat(), lng: bounds.getNorthEast().lng()};
+      const northWest = {lat: bounds.getNorthEast().lat(), lng: bounds.getSouthWest().lng()};
+      console.log(southWest, northEast, southEast, northWest);
     });
   })
   .catch(e => {
