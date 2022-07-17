@@ -1,12 +1,31 @@
-import './style.css'
-import Panzoom from '@panzoom/panzoom'
+import './style.css';
+import { Loader } from '@googlemaps/js-api-loader';
+import Panzoom from '@panzoom/panzoom';
 import rough from 'roughjs';
 
+// Canvas properties
 let pixelsPerInch = 300;
 let height =  8 * pixelsPerInch;
 let width = 11 * pixelsPerInch;
 
+// Map properties
+const mapTypeId = "terrain";
+const sanFrancisco = {lat: 37.7749, lng: 122.4194};
+const zoom = 10;
+
+const loader = new Loader({
+  apiKey: "AIzaSyCQpkTMIlOMhr5WivDDyUZn-d9kchQ7Sk4",
+  version: "weekly",
+  libraries: ["places"]
+});
+
 const canvas = document.getElementById('canvas');
+// const map = new google.maps.Map(document.getElementById("map"), {
+//   zoom,
+//   center: sanFrancisco,
+//   mapTypeId,
+// });
+// const elevator = new google.maps.ElevationService();
 
 const panzoom = Panzoom(canvas, {
   contain: 'outside',
@@ -15,8 +34,6 @@ const panzoom = Panzoom(canvas, {
   },
   maxScale: 1,
 });
-
-console.log(calcStartScale());
 
 // Bind to mousewheel
 canvas.addEventListener('wheel', panzoom.zoomWithWheel)
@@ -84,3 +101,16 @@ function init() {
 }
 
 init();
+
+loader
+  .load()
+  .then((google) => {
+    new google.maps.Map(document.getElementById("map"), {
+      zoom,
+      center: sanFrancisco,
+      mapTypeId,
+    });
+  })
+  .catch(e => {
+    // do something
+  });
