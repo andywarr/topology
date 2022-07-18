@@ -14,6 +14,8 @@ const mapTypeId = "terrain";
 const sanFrancisco = {lat: 37.7749, lng: 122.4194};
 const zoom = 12;
 
+const sampleLenth = 500; // distance (meters) to sample elevation
+
 const loader = new Loader({
   apiKey: config.API_TOKEN,
   version: "weekly",
@@ -59,6 +61,14 @@ let options = {
 let x = 0;
 let y = 0;
 
+Number.prototype.toRad = function() {
+  return this * Math.PI / 180;
+}
+
+Number.prototype.toDeg = function() {
+  return this * 180 / Math.PI;
+}
+
 function calcStartScale() {
   return Math.max(document.getElementById('canvas-wrapper').clientHeight/height,
     document.getElementById('canvas-wrapper').clientWidth/width);
@@ -66,10 +76,10 @@ function calcStartScale() {
 
 function distance(coord1, coord2) {
         // degrees to radians.
-        let lng1 = coord1.lng * Math.PI / 180;
-        let lng2 = coord2.lng * Math.PI / 180;
-        let lat1 = coord1.lat * Math.PI / 180;
-        let lat2 = coord2.lat * Math.PI / 180;
+        let lng1 = coord1.lng.toRad();
+        let lng2 = coord2.lng.toRad();
+        let lat1 = coord1.lat.toRad();
+        let lat2 = coord2.lat.toRad();
 
         // Haversine formula
         let dlng = lng2 - lng1;
@@ -87,16 +97,24 @@ function distance(coord1, coord2) {
     }
 
 function drawWave() {
-  for (let i = 0, y = circleSpacing + circleDiameter/2; y < canvas.height; i += 1, y += circleSpacing + circleDiameter) {
-    for (let j = 0, x = circleSpacing + circleDiameter/2; x < canvas.width; j += 1, x += Math.pow(((Math.sin(0.075 * j) + 1)/2)+1, 2) * circleSpacing + circleDiameter) {
+  for (let i = 0, y = circleSpacing + circleDiameter/2;
+       y < canvas.height;
+       i += 1, y += circleSpacing + circleDiameter) {
+    for (let j = 0, x = circleSpacing + circleDiameter/2;
+         x < canvas.width;
+         j += 1, x += Math.pow(((Math.sin(0.075 * j) + 1)/2)+1, 2) * circleSpacing + circleDiameter) {
       rc.circle(x, y, circleDiameter, options);
     }
   }
 }
 
 function drawUniform() {
-  for (let i = 0, y = circleSpacing + circleDiameter/2; y < canvas.height; i += 1, y += circleSpacing + circleDiameter) {
-    for (let j = 0, x = circleSpacing + circleDiameter/2; x < canvas.width; j += 1, x += circleSpacing + circleDiameter) {
+  for (let i = 0, y = circleSpacing + circleDiameter/2;
+       y < canvas.height;
+       i += 1, y += circleSpacing + circleDiameter) {
+    for (let j = 0, x = circleSpacing + circleDiameter/2;
+         x < canvas.width;
+         j += 1, x += circleSpacing + circleDiameter) {
       rc.circle(x, y, circleDiameter, options);
     }
   }
@@ -119,7 +137,8 @@ function init() {
 
   drawWave();
 
-  // Adding a timeout because in order for Panzoom to retrieve proper Zoom the canvas needs to be painted
+  // Adding a timeout because in order for Panzoom to retrieve proper Zoom
+  // the canvas needs to be painted
   setTimeout(() => panzoom.zoom(calcStartScale()))
 }
 
@@ -140,14 +159,18 @@ loader
 
     google.maps.event.addListener(map, 'bounds_changed', function() {
       const bounds = map.getBounds();
-      const southWest = {lat: bounds.getSouthWest().lat(), lng: bounds.getSouthWest().lng()};
-      const northEast = {lat: bounds.getNorthEast().lat(), lng: bounds.getNorthEast().lng()};
-      const southEast = {lat: bounds.getSouthWest().lat(), lng: bounds.getNorthEast().lng()};
-      const northWest = {lat: bounds.getNorthEast().lat(), lng: bounds.getSouthWest().lng()};
+      const southWest = {lat: bounds.getSouthWest().lat(),
+                         lng: bounds.getSouthWest().lng()};
+      const northEast = {lat: bounds.getNorthEast().lat(),
+                         lng: bounds.getNorthEast().lng()};
+      const southEast = {lat: bounds.getSouthWest().lat(),
+                         lng: bounds.getNorthEast().lng()};
+      const northWest = {lat: bounds.getNorthEast().lat(),
+                         lng: bounds.getSouthWest().lng()};
 
-      console.log(distance(northWest, northEast));
+      const samples =  distance(northWest, northEast)/sampleLenth;
     });
   })
   .catch(e => {
-    // do something
+    console.error(e);
   });
