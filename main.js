@@ -75,26 +75,33 @@ function calcStartScale() {
 }
 
 function distance(coord1, coord2) {
-        // degrees to radians.
-        let lng1 = coord1.lng.toRad();
-        let lng2 = coord2.lng.toRad();
-        let lat1 = coord1.lat.toRad();
-        let lat2 = coord2.lat.toRad();
+  // degrees to radians.
+  let lng1 = coord1.lng.toRad();
+  let lng2 = coord2.lng.toRad();
+  let lat1 = coord1.lat.toRad();
+  let lat2 = coord2.lat.toRad();
 
-        // Haversine formula
-        let dlng = lng2 - lng1;
-        let dlat = lat2 - lat1;
-        let a = Math.pow(Math.sin(dlat / 2), 2)
-                 + Math.cos(lat1) * Math.cos(lat2)
-                 * Math.pow(Math.sin(dlng / 2),2);
+  // Haversine formula
+  let dlng = lng2 - lng1;
+  let dlat = lat2 - lat1;
+  let a = Math.pow(Math.sin(dlat / 2), 2)
+           + Math.cos(lat1) * Math.cos(lat2)
+           * Math.pow(Math.sin(dlng / 2),2);
 
-        let c = 2 * Math.asin(Math.sqrt(a));
+  let c = 2 * Math.asin(Math.sqrt(a));
 
-        // Radius of earth in kilometers. Use 3956 for miles
-        let r = 6371;
+  // Radius of earth in kilometers. Use 3956 for miles
+  let r = 6371;
 
-        return(c * r * 1000);
-    }
+  return(c * r * 1000);
+}
+
+function newLng(coord, distance) {
+  // Radius of earth in kilometers. Use 3956 for miles
+  let r = 6371;
+
+  return coord.lng + (distance / r).toDeg() / Math.cos(coord.lat.toRad());
+}
 
 function drawWave() {
   for (let i = 0, y = circleSpacing + circleDiameter/2;
@@ -123,6 +130,18 @@ function drawUniform() {
 function setSize(height, width) {
   canvas.height = height;
   canvas.width = width;
+
+  const map = document.getElementById("map");
+
+  if (height > width) {
+    map.style.height = `${window.innerHeight * width/height}px`;
+    map.style.width = `${window.innerWidth * width/height}px`;
+  } else {
+    map.style.height = `${window.innerHeight * height/width}px`;
+    map.style.width = `${window.innerWidth * height/width}px`;
+  }
+
+  console.log(window.innerHeight, window.innerWidth, map.style.height, map.style.width);
 }
 
 // function windowResize() {
@@ -131,9 +150,7 @@ function setSize(height, width) {
 // }
 
 function init() {
-  //setSize(window.innerHeight, window.innerWidth);
   setSize(height, width);
-  // window.onresize = windowResize;
 
   drawWave();
 
@@ -169,6 +186,9 @@ loader
                          lng: bounds.getSouthWest().lng()};
 
       const samples =  distance(northWest, northEast)/sampleLenth;
+
+      console.log(northWest.lng);
+      console.log(newLng(northWest, sampleLenth/1000));
     });
   })
   .catch(e => {
