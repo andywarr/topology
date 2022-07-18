@@ -64,6 +64,28 @@ function calcStartScale() {
     document.getElementById('canvas-wrapper').clientWidth/width);
 }
 
+function distance(coord1, coord2) {
+        // degrees to radians.
+        let lng1 = coord1.lng * Math.PI / 180;
+        let lng2 = coord2.lng * Math.PI / 180;
+        let lat1 = coord1.lat * Math.PI / 180;
+        let lat2 = coord2.lat * Math.PI / 180;
+
+        // Haversine formula
+        let dlng = lng2 - lng1;
+        let dlat = lat2 - lat1;
+        let a = Math.pow(Math.sin(dlat / 2), 2)
+                 + Math.cos(lat1) * Math.cos(lat2)
+                 * Math.pow(Math.sin(dlng / 2),2);
+
+        let c = 2 * Math.asin(Math.sqrt(a));
+
+        // Radius of earth in kilometers. Use 3956 for miles
+        let r = 6371;
+
+        return(c * r * 1000);
+    }
+
 function drawWave() {
   for (let i = 0, y = circleSpacing + circleDiameter/2; y < canvas.height; i += 1, y += circleSpacing + circleDiameter) {
     for (let j = 0, x = circleSpacing + circleDiameter/2; x < canvas.width; j += 1, x += Math.pow(((Math.sin(0.075 * j) + 1)/2)+1, 2) * circleSpacing + circleDiameter) {
@@ -122,7 +144,8 @@ loader
       const northEast = {lat: bounds.getNorthEast().lat(), lng: bounds.getNorthEast().lng()};
       const southEast = {lat: bounds.getSouthWest().lat(), lng: bounds.getNorthEast().lng()};
       const northWest = {lat: bounds.getNorthEast().lat(), lng: bounds.getSouthWest().lng()};
-      console.log(southWest, northEast, southEast, northWest);
+
+      console.log(distance(northWest, northEast));
     });
   })
   .catch(e => {
