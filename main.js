@@ -14,7 +14,7 @@ const mapTypeId = "terrain";
 const sanFrancisco = {lat: 37.7749, lng: 122.4194};
 const zoom = 12;
 
-const sampleLenth = 500; // distance (meters) to sample elevation
+const sampleLenth = 0.5; // distance (kilometers) to sample elevation
 
 const loader = new Loader({
   apiKey: config.API_TOKEN,
@@ -88,19 +88,22 @@ function distance(coord1, coord2) {
            + Math.cos(lat1) * Math.cos(lat2)
            * Math.pow(Math.sin(dlng / 2),2);
 
-  let c = 2 * Math.asin(Math.sqrt(a));
+  let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   // Radius of earth in kilometers. Use 3956 for miles
   let r = 6371;
 
-  return(c * r * 1000);
+  return(c * r);
 }
 
 function newLng(coord, distance) {
   // Radius of earth in kilometers. Use 3956 for miles
   let r = 6371;
 
-  return coord.lng + (distance / r).toDeg() / Math.cos(coord.lat.toRad());
+  return {
+    lat: coord.lat,
+    lng: coord.lng - (distance / r).toDeg() / Math.cos(coord.lat.toRad())
+  };
 }
 
 function drawWave() {
@@ -127,6 +130,10 @@ function drawUniform() {
   }
 }
 
+function getElevation() {
+  
+}
+
 function setSize(height, width) {
   canvas.height = height;
   canvas.width = width;
@@ -140,14 +147,7 @@ function setSize(height, width) {
     map.style.height = `${window.innerHeight * height/width}px`;
     map.style.width = `${window.innerWidth * height/width}px`;
   }
-
-  console.log(window.innerHeight, window.innerWidth, map.style.height, map.style.width);
 }
-
-// function windowResize() {
-//   setSize(window.innerHeight, window.innerWidth);
-//   drawUniform();
-// }
 
 function init() {
   setSize(height, width);
@@ -180,15 +180,20 @@ loader
                          lng: bounds.getSouthWest().lng()};
       const northEast = {lat: bounds.getNorthEast().lat(),
                          lng: bounds.getNorthEast().lng()};
-      const southEast = {lat: bounds.getSouthWest().lat(),
-                         lng: bounds.getNorthEast().lng()};
-      const northWest = {lat: bounds.getNorthEast().lat(),
+      const southEast = {lat: bounds.getNorthEast().lat(),
                          lng: bounds.getSouthWest().lng()};
+      const northWest = {lat: bounds.getSouthWest().lat(),
+                         lng: bounds.getNorthEast().lng()};
 
-      const samples =  distance(northWest, northEast)/sampleLenth;
+      let i = northWest;
 
-      console.log(northWest.lng);
-      console.log(newLng(northWest, sampleLenth/1000));
+      while (i.lng >= southWest.lng) {
+        console.log(i);
+
+        i = newLng(i, sampleLenth);
+
+        getElevation();
+      }
     });
   })
   .catch(e => {
