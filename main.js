@@ -23,12 +23,6 @@ const loader = new Loader({
 });
 
 const canvas = document.getElementById('canvas');
-// const map = new google.maps.Map(document.getElementById("map"), {
-//   zoom,
-//   center: sanFrancisco,
-//   mapTypeId,
-// });
-// const elevator = new google.maps.ElevationService();
 
 const panzoom = Panzoom(canvas, {
   contain: 'outside',
@@ -130,8 +124,49 @@ function drawUniform() {
   }
 }
 
-function getElevation() {
-  
+async function getElevationData(google, southWest, northEast, southEast, northWest) {
+  const elevator = new google.maps.ElevationService();
+
+  let i = northWest;
+  let j = northEast;
+
+  let d = distance(i, j);
+
+  while (i.lng >= southWest.lng) {
+    const path = [i, j];
+
+    // const result = await elevator.getElevationAlongPath({
+    //     path: path,
+    //     samples: 3,
+    //     // samples: d/sampleLenth,
+    //   });
+    // console.log(i, result);
+
+    i = newLng(i, sampleLenth);
+    j = newLng(j, sampleLenth);
+  }
+}
+
+function getMap(google) {
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom,
+    center: sanFrancisco,
+    mapTypeId,
+  });
+
+  google.maps.event.addListener(map, 'bounds_changed', function() {
+    const bounds = map.getBounds();
+    const southWest = {lat: bounds.getSouthWest().lat(),
+                       lng: bounds.getSouthWest().lng()};
+    const northEast = {lat: bounds.getNorthEast().lat(),
+                       lng: bounds.getNorthEast().lng()};
+    const southEast = {lat: bounds.getNorthEast().lat(),
+                       lng: bounds.getSouthWest().lng()};
+    const northWest = {lat: bounds.getSouthWest().lat(),
+                       lng: bounds.getNorthEast().lng()};
+
+    getElevationData(google, southWest, northEast, southEast, northWest);
+  });
 }
 
 function setSize(height, width) {
@@ -149,8 +184,10 @@ function setSize(height, width) {
   }
 }
 
-function init() {
+function init(google) {
   setSize(height, width);
+
+  getMap(google);
 
   drawWave();
 
@@ -159,42 +196,10 @@ function init() {
   setTimeout(() => panzoom.zoom(calcStartScale()))
 }
 
-init();
-
 loader
   .load()
   .then((google) => {
-    const map = new google.maps.Map(document.getElementById("map"), {
-      zoom,
-      center: sanFrancisco,
-      mapTypeId,
-    });
-    const elevator = new google.maps.ElevationService();
-
-    // const bounds = map.getBounds();
-    // console.log(bounds);
-
-    google.maps.event.addListener(map, 'bounds_changed', function() {
-      const bounds = map.getBounds();
-      const southWest = {lat: bounds.getSouthWest().lat(),
-                         lng: bounds.getSouthWest().lng()};
-      const northEast = {lat: bounds.getNorthEast().lat(),
-                         lng: bounds.getNorthEast().lng()};
-      const southEast = {lat: bounds.getNorthEast().lat(),
-                         lng: bounds.getSouthWest().lng()};
-      const northWest = {lat: bounds.getSouthWest().lat(),
-                         lng: bounds.getNorthEast().lng()};
-
-      let i = northWest;
-
-      while (i.lng >= southWest.lng) {
-        console.log(i);
-
-        i = newLng(i, sampleLenth);
-
-        getElevation();
-      }
-    });
+    init(google);
   })
   .catch(e => {
     console.error(e);
