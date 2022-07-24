@@ -45,6 +45,8 @@ const rc = rough.canvas(canvas);
 let circleDiameter = 5;
 let circleSpacing = 2;
 
+let includeOceanFloor = true;
+
 let options = {
   stroke: '#000', // This is the color
   disableMultiStroke: true,
