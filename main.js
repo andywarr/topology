@@ -3,6 +3,7 @@ import config from './config'
 import { Loader } from '@googlemaps/js-api-loader';
 import Panzoom from '@panzoom/panzoom';
 import rough from 'roughjs';
+import sanFranciscoElevationData from './sanFranciscoElevationData';
 
 // Canvas properties
 let pixelsPerInch = 300;
@@ -11,7 +12,7 @@ let width = 11 * pixelsPerInch;
 
 // Map properties
 const mapTypeId = "terrain";
-const sanFrancisco = {lat: 37.7749, lng: 122.4194};
+const sanFrancisco = {lat: 37.7749, lng: -122.4194};
 const zoom = 12;
 
 const sampleLenth = 0.5; // distance (kilometers) to sample elevation
@@ -126,27 +127,46 @@ function drawUniform() {
   }
 }
 
+function cleanElevationData(result) {
+  let cleanData = [];
+
+  result.forEach((item, i) => {
+    cleanData.push(item.elevation);
+  });
+
+  return cleanData;
+}
+
+function delay(time) {
+  return new Promise(resolve => setTimeout(resolve, time));
+}
+
 async function getElevationData(google, southWest, northEast, southEast, northWest) {
+  let elevationData = [];
+
   const elevator = new google.maps.ElevationService();
 
   let i = northWest;
   let j = northEast;
 
-  let d = distance(i, j);
+  const d = distance(i, j);
 
   while (i.lng >= southWest.lng) {
     const path = [i, j];
 
-    // const result = await elevator.getElevationAlongPath({
-    //     path: path,
-    //     samples: 3,
-    //     // samples: d/sampleLenth,
-    //   });
-    // console.log(i, result);
+    const data = await elevator.getElevationAlongPath({
+      path: path,
+      samples: Math.round(d/sampleLenth),
+    });
+
+    elevationData.push(cleanElevationData(data.results));
+    await delay(500);
 
     i = newLng(i, sampleLenth);
     j = newLng(j, sampleLenth);
   }
+
+  console.log(elevationData);
 }
 
 function getMap(google) {
@@ -189,7 +209,9 @@ function setSize(height, width) {
 function init(google) {
   setSize(height, width);
 
-  getMap(google);
+  // getMap(google);
+
+  console.log(sanFranciscoElevationData);
 
   drawWave();
 
