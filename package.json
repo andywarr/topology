@@ -9,5 +9,10 @@
   },
   "devDependencies": {
     "vite": "^2.9.9"
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^1.14.3",
+    "@panzoom/panzoom": "^4.5.0",
+    "roughjs": "^4.5.2"
   }
 }

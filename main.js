@@ -93,6 +93,24 @@ function distance(coord1, coord2) {
   return(c * r);
 }
 
+function highestElevation(elevationData) {
+  let x;
+  let y;
+  let e = 0;
+
+  for(let i = 0; i < elevationData.length; i++) {
+    for(let j = 0; j < elevationData[i].length; j++) {
+      if (elevationData[i][j] > e) {
+        e = elevationData[i][j];
+        x = j;
+        y = i;
+      }
+    }
+  }
+
+  return {elevation: e, i: y, j: x}
+}
+
 function newLng(coord, distance) {
   // Radius of earth in kilometers. Use 3956 for miles
   let r = 6371;
@@ -165,8 +183,6 @@ async function getElevationData(google, southWest, northEast, southEast, northWe
     i = newLng(i, sampleLenth);
     j = newLng(j, sampleLenth);
   }
-
-  console.log(elevationData);
 }
 
 function getMap(google) {
@@ -211,7 +227,7 @@ function init(google) {
 
   // getMap(google);
 
-  console.log(sanFranciscoElevationData);
+  console.log(highestElevation(sanFranciscoElevationData));
 
   drawWave();
 
