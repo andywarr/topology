@@ -1,5 +1,5 @@
 {
-  "name": "pamjue",
+  "name": "topology",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.14.3",
-    "@panzoom/panzoom": "^4.5.0",
-    "roughjs": "^4.5.2"
+    "three": "^0.149.0"
   }
 }

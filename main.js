@@ -1,75 +1,32 @@
-import './style.css';
-import config from './config'
-import { Loader } from '@googlemaps/js-api-loader';
-import Panzoom from '@panzoom/panzoom';
-import rough from 'roughjs';
-import sanFranciscoElevationData from './sanFranciscoElevationData';
-
-// Canvas properties
-let pixelsPerInch = 300;
-let height =  8 * pixelsPerInch;
-let width = 11 * pixelsPerInch;
+import "./style.css";
+import config from "./config";
+import { Loader } from "@googlemaps/js-api-loader";
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import sanFranciscoElevationData from "./sanFranciscoElevationData";
 
 // Map properties
 const mapTypeId = "terrain";
-const sanFrancisco = {lat: 37.7749, lng: -122.4194};
+const sanFrancisco = { lat: 51.528308, lng: -0.171663 };
 const zoom = 12;
 
-const sampleLenth = 0.5; // distance (kilometers) to sample elevation
+const sampleLength = 0.1; // distance (kilometers) to sample elevation
 
 const loader = new Loader({
   apiKey: config.API_TOKEN,
   version: "weekly",
-  libraries: ["places"]
+  libraries: ["places"],
 });
 
-const canvas = document.getElementById('canvas');
+let includeOceanFloor = false;
 
-const panzoom = Panzoom(canvas, {
-  contain: 'outside',
-  handleStartEvent: (event) => {
-    event.preventDefault()
-  },
-  maxScale: 1,
-});
+Number.prototype.toRad = function () {
+  return (this * Math.PI) / 180;
+};
 
-// Bind to mousewheel
-canvas.addEventListener('wheel', panzoom.zoomWithWheel)
-// Bind to shift+mousewheel
-canvas.addEventListener('wheel', function (event) {
-  if (!event.shiftKey) return
-  panzoom.zoomWithWheel(event)
-});
-
-const rc = rough.canvas(canvas);
-
-let circleDiameter = 5;
-let circleSpacing = 2;
-
-let includeOceanFloor = true;
-
-let options = {
-  stroke: '#000', // This is the color
-  disableMultiStroke: true,
-  roughness: 0.5, // 0 is a perfect circle
-  strokeWidth: 1
-}
-
-let x = 0;
-let y = 0;
-
-Number.prototype.toRad = function() {
-  return this * Math.PI / 180;
-}
-
-Number.prototype.toDeg = function() {
-  return this * 180 / Math.PI;
-}
-
-function calcStartScale() {
-  return Math.max(document.getElementById('canvas-wrapper').clientHeight/height,
-    document.getElementById('canvas-wrapper').clientWidth/width);
-}
+Number.prototype.toDeg = function () {
+  return (this * 180) / Math.PI;
+};
 
 function distance(coord1, coord2) {
   // degrees to radians.
@@ -81,34 +38,26 @@ function distance(coord1, coord2) {
   // Haversine formula
   let dlng = lng2 - lng1;
   let dlat = lat2 - lat1;
-  let a = Math.pow(Math.sin(dlat / 2), 2)
-           + Math.cos(lat1) * Math.cos(lat2)
-           * Math.pow(Math.sin(dlng / 2),2);
+  let a =
+    Math.pow(Math.sin(dlat / 2), 2) +
+    Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlng / 2), 2);
 
   let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   // Radius of earth in kilometers. Use 3956 for miles
   let r = 6371;
 
-  return(c * r);
+  return c * r;
 }
 
-function highestElevation(elevationData) {
-  let x;
-  let y;
-  let e = 0;
+function newLat(coord, distance) {
+  // Radius of earth in kilometers. Use 3956 for miles
+  let r = 6371;
 
-  for(let i = 0; i < elevationData.length; i++) {
-    for(let j = 0; j < elevationData[i].length; j++) {
-      if (elevationData[i][j] > e) {
-        e = elevationData[i][j];
-        x = j;
-        y = i;
-      }
-    }
-  }
-
-  return {elevation: e, i: y, j: x}
+  return {
+    lat: coord.lat - (distance / r) * (180 / Math.PI),
+    lng: coord.lng,
+  };
 }
 
 function newLng(coord, distance) {
@@ -117,32 +66,8 @@ function newLng(coord, distance) {
 
   return {
     lat: coord.lat,
-    lng: coord.lng - (distance / r).toDeg() / Math.cos(coord.lat.toRad())
+    lng: coord.lng - (distance / r).toDeg() / Math.cos(coord.lat.toRad()),
   };
-}
-
-function drawWave() {
-  for (let i = 0, y = circleSpacing + circleDiameter/2;
-       y < canvas.height;
-       i += 1, y += circleSpacing + circleDiameter) {
-    for (let j = 0, x = circleSpacing + circleDiameter/2;
-         x < canvas.width;
-         j += 1, x += Math.pow(((Math.sin(0.075 * j) + 1)/2)+1, 2) * circleSpacing + circleDiameter) {
-      rc.circle(x, y, circleDiameter, options);
-    }
-  }
-}
-
-function drawUniform() {
-  for (let i = 0, y = circleSpacing + circleDiameter/2;
-       y < canvas.height;
-       i += 1, y += circleSpacing + circleDiameter) {
-    for (let j = 0, x = circleSpacing + circleDiameter/2;
-         x < canvas.width;
-         j += 1, x += circleSpacing + circleDiameter) {
-      rc.circle(x, y, circleDiameter, options);
-    }
-  }
 }
 
 function cleanElevationData(result) {
@@ -156,10 +81,16 @@ function cleanElevationData(result) {
 }
 
 function delay(time) {
-  return new Promise(resolve => setTimeout(resolve, time));
+  return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-async function getElevationData(google, southWest, northEast, southEast, northWest) {
+async function getElevationData(
+  google,
+  southWest,
+  northEast,
+  southEast,
+  northWest
+) {
   let elevationData = [];
 
   const elevator = new google.maps.ElevationService();
@@ -168,21 +99,48 @@ async function getElevationData(google, southWest, northEast, southEast, northWe
   let j = northEast;
 
   const d = distance(i, j);
+  const denominator = distance(northWest, southWest);
+  let numerator = 0;
+  console.log(d);
+  let samples = Math.floor(d / sampleLength);
+  const maxSamples = 500;
+  const requestsPerSecond = 100;
 
-  while (i.lng >= southWest.lng) {
-    const path = [i, j];
+  while (i.lat >= southWest.lat) {
+    let k = i;
+    let s = samples;
+    let pathElevation = [];
+    console.log(
+      `Downloading elevation data (${(numerator / denominator) * 100}%)`
+    );
+    while (s > 0) {
+      let path;
+      if (s > maxSamples) {
+        const l = newLng(k, maxSamples * sampleLength);
 
-    const data = await elevator.getElevationAlongPath({
-      path: path,
-      samples: Math.round(d/sampleLenth),
-    });
+        path = [k, l];
+      } else {
+        path = [k, j];
+      }
 
-    elevationData.push(cleanElevationData(data.results));
-    await delay(500);
+      const data = await elevator.getElevationAlongPath({
+        path: path,
+        samples: s > 500 ? maxSamples : s,
+      });
 
-    i = newLng(i, sampleLenth);
-    j = newLng(j, sampleLenth);
+      pathElevation.push(cleanElevationData(data.results));
+      s -= maxSamples;
+      await delay(Math.ceil(maxSamples / requestsPerSecond) * 1000);
+    }
+    elevationData.push(pathElevation.flat());
+
+    i = newLat(i, sampleLength);
+    j = newLat(j, sampleLength);
+    numerator += sampleLength;
   }
+  console.log(`Downloading elevation data (100%)`);
+  console.log(elevationData);
+  draw(elevationData);
 }
 
 function getMap(google) {
@@ -192,48 +150,169 @@ function getMap(google) {
     mapTypeId,
   });
 
-  google.maps.event.addListener(map, 'bounds_changed', function() {
+  google.maps.event.addListener(map, "bounds_changed", function () {
     const bounds = map.getBounds();
-    const southWest = {lat: bounds.getSouthWest().lat(),
-                       lng: bounds.getSouthWest().lng()};
-    const northEast = {lat: bounds.getNorthEast().lat(),
-                       lng: bounds.getNorthEast().lng()};
-    const southEast = {lat: bounds.getNorthEast().lat(),
-                       lng: bounds.getSouthWest().lng()};
-    const northWest = {lat: bounds.getSouthWest().lat(),
-                       lng: bounds.getNorthEast().lng()};
+    const southWest = {
+      lat: bounds.getSouthWest().lat(),
+      lng: bounds.getSouthWest().lng(),
+    };
+    const northEast = {
+      lat: bounds.getNorthEast().lat(),
+      lng: bounds.getNorthEast().lng(),
+    };
+    const southEast = {
+      lat: bounds.getSouthWest().lat(),
+      lng: bounds.getNorthEast().lng(),
+    };
+    const northWest = {
+      lat: bounds.getNorthEast().lat(),
+      lng: bounds.getSouthWest().lng(),
+    };
 
     getElevationData(google, southWest, northEast, southEast, northWest);
   });
 }
 
-function setSize(height, width) {
-  canvas.height = height;
-  canvas.width = width;
+function kmToM(distance) {
+  const mInKm = 1000;
 
-  const map = document.getElementById("map");
-
-  if (height > width) {
-    map.style.height = `${window.innerHeight * width/height}px`;
-    map.style.width = `${window.innerWidth * width/height}px`;
-  } else {
-    map.style.height = `${window.innerHeight * height/width}px`;
-    map.style.width = `${window.innerWidth * height/width}px`;
-  }
+  return distance * mInKm;
 }
 
+let camera, controls, material, scene, renderer;
+
+function processElevation(elevation) {
+  if (!includeOceanFloor && elevation < 0) {
+    return 0;
+  }
+
+  return elevation;
+}
+
+function draw(elevationData) {
+  renderer = new THREE.WebGLRenderer({
+    preserveDrawingBuffer: true,
+  });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  camera = new THREE.PerspectiveCamera(
+    45,
+    window.innerWidth / window.innerHeight,
+    1,
+    50000
+  );
+  camera.position.set(
+    0,
+    0,
+    kmToM(elevationData.length * sampleLength) /
+      2 /
+      Math.tan((Math.PI * 45) / 360)
+  );
+  camera.lookAt(0, 0, 0);
+
+  // controls
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.listenToKeyEvents(window); // optional
+  controls.addEventListener("change", render); // call this only in static scenes (i.e., if there is no animation loop)
+
+  controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+  controls.dampingFactor = 0.05;
+
+  controls.screenSpacePanning = false;
+
+  controls.minDistance = 100;
+  controls.maxDistance = 50000;
+
+  controls.maxPolarAngle = Math.PI / 2;
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
+
+  material = new THREE.MeshStandardMaterial({
+    color: 0x222222,
+    flatShading: true,
+    roughness: 0.2,
+    metalness: 0.2,
+  });
+
+  let geometry = new THREE.PlaneGeometry(
+    kmToM(elevationData[0].length * sampleLength),
+    kmToM(elevationData.length * sampleLength),
+    elevationData[0].length - 1,
+    elevationData.length - 1
+  );
+
+  const vertices = geometry.attributes.position.array;
+
+  for (let i = 0, l = elevationData.flat().length; i < l; i++) {
+    vertices[(i + 1) * 3 - 1] = processElevation(elevationData.flat()[i]) * 2;
+  }
+
+  let plane = new THREE.Mesh(geometry, material);
+
+  // lights
+  // const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.5);
+  // dirLight1.position.set(0, 1, 0);
+  // scene.add(dirLight1);
+
+  // const dirLight2 = new THREE.DirectionalLight(0xffffff, 1.5);
+  // dirLight2.position.set(0, -1, 0);
+  // scene.add(dirLight2);
+
+  // const dirLight3 = new THREE.DirectionalLight(0xffffff, 1.5);
+  // dirLight3.position.set(1, 0, 0);
+  // scene.add(dirLight3);
+
+  // const dirLight4 = new THREE.DirectionalLight(0xffffff, 1.5);
+  // dirLight4.position.set(-1, 0, 0);
+  // scene.add(dirLight4);
+
+  // const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+  // scene.add(ambientLight);
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 3);
+  dirLight.position.set(0, 1, 0);
+  dirLight.castShadow = false;
+  scene.add(dirLight);
+
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+  scene.add(ambientLight);
+
+  // const hemiLight = new THREE.HemisphereLight(0xaaaaaa, 0x444444, 2);
+  // scene.add(hemiLight);
+
+  // const rimLight = new THREE.PointLight(0xffffff, 3);
+  // rimLight.position.set(-5, 5, 5);
+  // scene.add(rimLight);
+
+  scene.add(plane);
+  render();
+}
+
+function render() {
+  renderer.render(scene, camera);
+}
+
+document.addEventListener(
+  "keydown",
+  function (e) {
+    if (
+      (window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) &&
+      e.key == "s"
+    ) {
+      e.preventDefault();
+      const dataURL = renderer.domElement.toDataURL();
+      console.log(dataURL);
+      window.open(dataURL);
+    }
+  },
+  false
+);
+
 function init(google) {
-  setSize(height, width);
-
-  // getMap(google);
-
-  console.log(highestElevation(sanFranciscoElevationData));
-
-  drawWave();
-
-  // Adding a timeout because in order for Panzoom to retrieve proper Zoom
-  // the canvas needs to be painted
-  setTimeout(() => panzoom.zoom(calcStartScale()))
+  //getMap(google);
+  draw(sanFranciscoElevationData);
 }
 
 loader
@@ -241,6 +320,6 @@ loader
   .then((google) => {
     init(google);
   })
-  .catch(e => {
+  .catch((e) => {
     console.error(e);
   });
