@@ -232,7 +232,7 @@ function draw(elevationData) {
   material = new THREE.MeshStandardMaterial({
     color: 0x222222,
     flatShading: true,
-    roughness: 0.2,
+    roughness: 0.8,
     metalness: 0.2,
   });
 
@@ -279,12 +279,12 @@ function draw(elevationData) {
   const ambientLight = new THREE.AmbientLight(0xffffff, 1);
   scene.add(ambientLight);
 
-  // const hemiLight = new THREE.HemisphereLight(0xaaaaaa, 0x444444, 2);
-  // scene.add(hemiLight);
+  const hemiLight = new THREE.HemisphereLight(0xaaaaaa, 0x444444, 2);
+  scene.add(hemiLight);
 
-  // const rimLight = new THREE.PointLight(0xffffff, 3);
-  // rimLight.position.set(-5, 5, 5);
-  // scene.add(rimLight);
+  const rimLight = new THREE.PointLight(0xffffff, 3);
+  rimLight.position.set(-5, 5, 5);
+  scene.add(rimLight);
 
   scene.add(plane);
   render();
