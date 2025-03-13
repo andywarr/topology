@@ -3,7 +3,11 @@ import config from "./config";
 import { Loader } from "@googlemaps/js-api-loader";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import sanFranciscoElevationData from "./sanFranciscoElevationData";
+import { GUI } from "dat.gui";
+import sanFranciscoElevationData from "./elevationData/sanFranciscoElevationData";
+import tahoeElevationData from "./elevationData/tahoeElevationData";
+
+const DEBUG = false;
 
 // Map properties
 const mapTypeId = "terrain";
