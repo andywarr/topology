@@ -9,7 +9,7 @@ export class ElevationService {
   }
 
   // Get elevation data for an area defined by corners
-  async getElevationData(coordinates) {
+  async getElevationData(coordinates, onProgress = () => {}) {
     const { southWest, northEast, southEast, northWest } = coordinates;
     let elevationData = [];
 
@@ -19,6 +19,10 @@ export class ElevationService {
     const totalDistance = GeoUtils.distance(northWest, southWest);
     let processedDistance = 0;
     let samples = Math.floor(GeoUtils.distance(i, j) / this.sampleLength);
+
+    const pathPoints = this.calculatePathPoints(coordinates);
+    const totalPoints = pathPoints.length;
+    let completedPoints = 0;
 
     try {
       // Process rows of elevation data
@@ -76,6 +80,13 @@ export class ElevationService {
         i = GeoUtils.newLat(i, this.sampleLength);
         j = GeoUtils.newLat(j, this.sampleLength);
         processedDistance += this.sampleLength;
+
+        // Update progress based on distance processed
+        const progress = Math.min(
+          (processedDistance / totalDistance) * 100,
+          100
+        );
+        onProgress(progress);
       }
 
       console.log(`Downloading elevation data (100%)`);
@@ -94,5 +105,39 @@ export class ElevationService {
   // Utility to create delays between API requests
   _delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  // Calculate path points for progress tracking
+  calculatePathPoints(coordinates) {
+    const { southWest, northEast, southEast, northWest } = coordinates;
+    let pathPoints = [];
+
+    let i = northWest;
+    let j = northEast;
+
+    while (i.lat >= southWest.lat) {
+      let currentPoint = i;
+      let samples = Math.floor(GeoUtils.distance(i, j) / this.sampleLength);
+
+      while (samples > 0) {
+        pathPoints.push(currentPoint);
+
+        if (samples > this.maxSamples) {
+          currentPoint = GeoUtils.newLng(
+            currentPoint,
+            this.maxSamples * this.sampleLength
+          );
+          samples -= this.maxSamples;
+        } else {
+          currentPoint = j;
+          samples = 0;
+        }
+      }
+
+      i = GeoUtils.newLat(i, this.sampleLength);
+      j = GeoUtils.newLat(j, this.sampleLength);
+    }
+
+    return pathPoints;
   }
 }
