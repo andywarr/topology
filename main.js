@@ -11,10 +11,23 @@ const DEBUG = false;
 
 // Map properties
 const mapTypeId = "terrain";
-const sanFrancisco = { lat: 51.528308, lng: -0.171663 };
-const zoom = 12;
+const everest = {
+  center: { lat: 27.9881198, lng: 86.8425776 },
+  zoom: 10,
+};
+const nyc = {
+  center: { lat: 40.6966727, lng: -74.1443534 },
+  zoom: 12,
+};
+const sanFrancisco = {
+  center: { lat: 37.7709704, lng: -122.4118542 },
+  zoom: 12,
+};
+const tahoe = { center: { lat: 39.088311, lng: -120.013428 }, zoom: 10 };
 
-const sampleLength = 0.1; // distance (kilometers) to sample elevation
+const sampleLength = 0.5; // distance (kilometers) to sample elevation
+
+const maxDistance = 100000;
 
 const loader = new Loader({
   apiKey: config.API_TOKEN,
@@ -105,7 +118,6 @@ async function getElevationData(
   const d = distance(i, j);
   const denominator = distance(northWest, southWest);
   let numerator = 0;
-  console.log(d);
   let samples = Math.floor(d / sampleLength);
   const maxSamples = 500;
   const requestsPerSecond = 100;
@@ -134,7 +146,8 @@ async function getElevationData(
 
       pathElevation.push(cleanElevationData(data.results));
       s -= maxSamples;
-      await delay(Math.ceil(maxSamples / requestsPerSecond) * 1000);
+      //await delay(Math.ceil(maxSamples / requestsPerSecond) * 1000);
+      await delay(1000);
     }
     elevationData.push(pathElevation.flat());
 
@@ -149,8 +162,8 @@ async function getElevationData(
 
 function getMap(google) {
   const map = new google.maps.Map(document.getElementById("map"), {
-    zoom,
-    center: sanFrancisco,
+    zoom: nyc.zoom,
+    center: nyc.center,
     mapTypeId,
   });
 
@@ -196,15 +209,18 @@ function processElevation(elevation) {
 function draw(elevationData) {
   renderer = new THREE.WebGLRenderer({
     preserveDrawingBuffer: true,
+    logarithmicDepthBuffer: true,
   });
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
+  const gui = new GUI();
+
   camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth / window.innerHeight,
-    1,
-    50000
+    100,
+    maxDistance
   );
   camera.position.set(
     0,
@@ -226,7 +242,7 @@ function draw(elevationData) {
   controls.screenSpacePanning = false;
 
   controls.minDistance = 100;
-  controls.maxDistance = 50000;
+  controls.maxDistance = maxDistance;
 
   controls.maxPolarAngle = Math.PI / 2;
 
@@ -234,10 +250,11 @@ function draw(elevationData) {
   scene.background = new THREE.Color(0x000000);
 
   material = new THREE.MeshStandardMaterial({
-    color: 0x222222,
+    color: 0x777777,
     flatShading: true,
-    roughness: 0.8,
-    metalness: 0.2,
+    roughness: 0.4,
+    metalness: 0.85,
+    // wireframe: true,
   });
 
   let geometry = new THREE.PlaneGeometry(
@@ -247,50 +264,102 @@ function draw(elevationData) {
     elevationData.length - 1
   );
 
+  const flattenedElevationData = elevationData
+    .flat()
+    .map((value) => Math.round(value / 25) * 25);
   const vertices = geometry.attributes.position.array;
 
-  for (let i = 0, l = elevationData.flat().length; i < l; i++) {
-    vertices[(i + 1) * 3 - 1] = processElevation(elevationData.flat()[i]) * 2;
+  for (let i = 0, l = flattenedElevationData.length; i < l; i++) {
+    const elevation = processElevation(flattenedElevationData[i]);
+    vertices[i * 3 + 2] = elevation * 2;
   }
+  geometry.attributes.position.needsUpdate = true;
+  geometry.computeVertexNormals();
 
   let plane = new THREE.Mesh(geometry, material);
 
-  // lights
-  // const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.5);
-  // dirLight1.position.set(0, 1, 0);
-  // scene.add(dirLight1);
-
-  // const dirLight2 = new THREE.DirectionalLight(0xffffff, 1.5);
-  // dirLight2.position.set(0, -1, 0);
-  // scene.add(dirLight2);
-
-  // const dirLight3 = new THREE.DirectionalLight(0xffffff, 1.5);
-  // dirLight3.position.set(1, 0, 0);
-  // scene.add(dirLight3);
-
-  // const dirLight4 = new THREE.DirectionalLight(0xffffff, 1.5);
-  // dirLight4.position.set(-1, 0, 0);
-  // scene.add(dirLight4);
-
-  // const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+  // Add lighting to the scene
+  // const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
   // scene.add(ambientLight);
 
-  const dirLight = new THREE.DirectionalLight(0xffffff, 3);
-  dirLight.position.set(0, 1, 0);
-  dirLight.castShadow = false;
-  scene.add(dirLight);
+  // const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.4);
+  // scene.add(hemisphereLight);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-  scene.add(ambientLight);
+  // Store light position components
+  const mainLightPos = { x: 2, y: 2, z: 1 };
+  const fillLightPos = { x: -1, y: -1, z: 1 };
 
-  const hemiLight = new THREE.HemisphereLight(0xaaaaaa, 0x444444, 2);
-  scene.add(hemiLight);
+  // Functions to update light positions
+  function updateMainLightPosition() {
+    directionalLight.position
+      .set(mainLightPos.x, mainLightPos.y, mainLightPos.z)
+      .normalize();
+  }
 
-  const rimLight = new THREE.PointLight(0xffffff, 3);
-  rimLight.position.set(-5, 5, 5);
-  scene.add(rimLight);
+  function updateFillLightPosition() {
+    directionalLight2.position
+      .set(fillLightPos.x, fillLightPos.y, fillLightPos.z)
+      .normalize();
+  }
+
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+  directionalLight.position
+    .set(mainLightPos.x, mainLightPos.y, mainLightPos.z)
+    .normalize();
+  scene.add(directionalLight);
+
+  const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+  directionalLight2.position
+    .set(fillLightPos.x, fillLightPos.y, fillLightPos.z)
+    .normalize();
+  scene.add(directionalLight2);
+
+  // Add lighting controls to GUI
+  const lightFolder = gui.addFolder("lighting");
+  //lightFolder.add(ambientLight, "intensity", 0, 1).name("ambient");
+  //lightFolder.add(hemisphereLight, "intensity", 0, 1).name("hemisphere");
+  lightFolder.add(directionalLight, "intensity", 0, 2).name("main light");
+  lightFolder.add(directionalLight2, "intensity", 0, 1).name("fill light");
+
+  // Add position controls for main light
+  const mainLightFolder = lightFolder.addFolder("main light position");
+  mainLightFolder
+    .add(mainLightPos, "x", -10, 10)
+    .onChange(updateMainLightPosition);
+  mainLightFolder
+    .add(mainLightPos, "y", -10, 10)
+    .onChange(updateMainLightPosition);
+  mainLightFolder
+    .add(mainLightPos, "z", -10, 10)
+    .onChange(updateMainLightPosition);
+
+  // Add position controls for fill light
+  const fillLightFolder = lightFolder.addFolder("fill light position");
+  fillLightFolder
+    .add(fillLightPos, "x", -10, 10)
+    .onChange(updateFillLightPosition);
+  fillLightFolder
+    .add(fillLightPos, "y", -10, 10)
+    .onChange(updateFillLightPosition);
+  fillLightFolder
+    .add(fillLightPos, "z", -10, 10)
+    .onChange(updateFillLightPosition);
+
+  lightFolder.open();
+
+  const materialFolder = gui.addFolder("material");
+  materialFolder.add(material, "metalness", 0, 1);
+  materialFolder.add(material, "roughness", 0, 1);
+  materialFolder.open();
 
   scene.add(plane);
+  animate();
+  //render();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+
   render();
 }
 
@@ -315,8 +384,11 @@ document.addEventListener(
 );
 
 function init(google) {
-  //getMap(google);
-  draw(sanFranciscoElevationData);
+  if (!DEBUG) {
+    getMap(google);
+  } else {
+    draw(sanFranciscoElevationData);
+  }
 }
 
 loader
