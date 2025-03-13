@@ -13,7 +13,7 @@ export class TerrainRenderer {
     this.renderer = null;
     this.material = null;
     this.gui = null;
-    this.maxDistance = 100000;
+    this.maxDistance = null;
     this.includeOceanFloor = false;
     this.sampleLength = sampleLength;
 
@@ -83,6 +83,12 @@ export class TerrainRenderer {
    * Setup the camera
    */
   setupCamera(elevationData) {
+    // Position camera to view terrain from appropriate distance
+    this.maxDistance =
+      this.kmToM(elevationData.length * this.sampleLength) /
+      2 /
+      Math.tan((Math.PI * 45) / 360);
+
     this.camera = new THREE.PerspectiveCamera(
       45,
       window.innerWidth / window.innerHeight,
@@ -90,13 +96,7 @@ export class TerrainRenderer {
       this.maxDistance
     );
 
-    // Position camera to view terrain from appropriate distance
-    const cameraDistance =
-      this.kmToM(elevationData.length * this.sampleLength) /
-      2 /
-      Math.tan((Math.PI * 45) / 360);
-
-    this.camera.position.set(0, 0, cameraDistance);
+    this.camera.position.set(0, 0, this.maxDistance);
     this.camera.lookAt(0, 0, 0);
   }
 
