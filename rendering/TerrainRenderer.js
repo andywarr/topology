@@ -6,7 +6,7 @@ import { GUI } from "dat.gui";
  * TerrainRenderer - Handles 3D rendering of terrain using Three.js
  */
 export class TerrainRenderer {
-  constructor() {
+  constructor(sampleLength) {
     this.camera = null;
     this.controls = null;
     this.scene = null;
@@ -15,7 +15,7 @@ export class TerrainRenderer {
     this.gui = null;
     this.maxDistance = 100000;
     this.includeOceanFloor = false;
-    this.sampleLength = 0.5;
+    this.sampleLength = sampleLength;
 
     // Bind methods
     this.animate = this.animate.bind(this);
