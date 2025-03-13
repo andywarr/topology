@@ -34,8 +34,8 @@ function initApp(google) {
 // Initialize Maps interface
 function initMap(google, elevationService, terrainRenderer) {
   const map = new google.maps.Map(document.getElementById("map"), {
-    zoom: LocationPresets.nyc.zoom,
-    center: LocationPresets.nyc.center,
+    zoom: LocationPresets.sanFrancisco.zoom,
+    center: LocationPresets.sanFrancisco.center,
     mapTypeId: "terrain",
   });
 
