@@ -4,8 +4,7 @@ import { Loader } from "@googlemaps/js-api-loader";
 import { ElevationService } from "./services/ElevationService.js";
 import { TerrainRenderer } from "./rendering/TerrainRenderer.js";
 import { LocationPresets } from "./utils/LocationPresets.js";
-import sanFranciscoElevationData from "./elevationData/sanFranciscoElevationData";
-import tahoeElevationData from "./elevationData/tahoeElevationData";
+import elevationData from "./elevationData/sanFranciscoElevationData";
 
 const DEBUG = false;
 const SAMPLE_LENGTH = 0.5; // distance (kilometers) to sample elevation
@@ -20,7 +19,7 @@ const loader = new Loader({
 // App initialization
 function initApp(google) {
   const elevationService = new ElevationService(google, SAMPLE_LENGTH);
-  const terrainRenderer = new TerrainRenderer();
+  const terrainRenderer = new TerrainRenderer(SAMPLE_LENGTH);
 
   // Register screenshot shortcut
   registerKeyboardShortcuts(terrainRenderer);
@@ -28,7 +27,7 @@ function initApp(google) {
   if (!DEBUG) {
     initMap(google, elevationService, terrainRenderer);
   } else {
-    terrainRenderer.draw(sanFranciscoElevationData);
+    terrainRenderer.draw(elevationData);
   }
 }
 
