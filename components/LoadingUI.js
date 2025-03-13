@@ -26,7 +26,7 @@ export class LoadingUI {
     // Create description
     const description = document.createElement("p");
     description.className = "text-sm text-slate-500 dark:text-slate-400 mb-4";
-    description.textContent = "Please wait while we fetch elevation data...";
+    description.textContent = "Please wait while fetching elevation data...";
 
     // Create progress container
     const progressContainer = document.createElement("div");
