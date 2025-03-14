@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+// import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GUI } from "dat.gui";
 
 /**
@@ -8,7 +8,7 @@ import { GUI } from "dat.gui";
 export class TerrainRenderer {
   constructor(sampleLength) {
     this.camera = null;
-    this.controls = null;
+    // this.controls = null;
     this.scene = null;
     this.renderer = null;
     this.material = null;
@@ -18,7 +18,7 @@ export class TerrainRenderer {
     this.sampleLength = sampleLength;
 
     // Bind methods
-    this.animate = this.animate.bind(this);
+    // this.animate = this.animate.bind(this);
     this.render = this.render.bind(this);
   }
 
@@ -65,7 +65,7 @@ export class TerrainRenderer {
     this.setupCamera(elevationData);
 
     // Setup controls
-    this.setupControls();
+    // this.setupControls();
 
     // Create terrain geometry
     this.createTerrain(elevationData, scale);
@@ -74,7 +74,10 @@ export class TerrainRenderer {
     this.setupLighting();
 
     // Start animation loop
-    this.animate();
+    // this.animate();
+
+    // Render
+    this.render();
 
     return this;
   }
@@ -103,20 +106,20 @@ export class TerrainRenderer {
   /**
    * Setup orbit controls
    */
-  setupControls() {
-    // Create controls
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.listenToKeyEvents(window);
-    this.controls.addEventListener("change", this.render);
+  // setupControls() {
+  //   // Create controls
+  //   this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+  //   this.controls.listenToKeyEvents(window);
+  //   this.controls.addEventListener("change", this.render);
 
-    // Configure controls
-    this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.05;
-    this.controls.screenSpacePanning = false;
-    this.controls.minDistance = 100;
-    this.controls.maxDistance = this.maxDistance;
-    this.controls.maxPolarAngle = Math.PI / 2;
-  }
+  //   // Configure controls
+  //   this.controls.enableDamping = true;
+  //   this.controls.dampingFactor = 0.05;
+  //   this.controls.screenSpacePanning = false;
+  //   this.controls.minDistance = 100;
+  //   this.controls.maxDistance = this.maxDistance;
+  //   this.controls.maxPolarAngle = Math.PI / 2;
+  // }
 
   /**
    * Create terrain from elevation data
@@ -235,15 +238,15 @@ export class TerrainRenderer {
   /**
    * Animation loop
    */
-  animate() {
-    requestAnimationFrame(this.animate);
+  // animate() {
+  //   requestAnimationFrame(this.animate);
 
-    if (this.controls) {
-      this.controls.update();
-    }
+  //   // if (this.controls) {
+  //   //   this.controls.update();
+  //   // }
 
-    this.render();
-  }
+  //   this.render();
+  // }
 
   /**
    * Render the scene
@@ -368,9 +371,9 @@ export class TerrainRenderer {
       this.terrain.material.dispose();
     }
 
-    if (this.controls) {
-      this.controls.dispose();
-    }
+    // if (this.controls) {
+    //   this.controls.dispose();
+    // }
 
     window.removeEventListener("resize", this.onWindowResize);
   }
