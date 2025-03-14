@@ -13,7 +13,6 @@ dist
 dist-ssr
 *.local
 exports
-elevationData
 
 # Editor directories and files
 .vscode/*
