@@ -126,8 +126,8 @@ export class TerrainRenderer {
     this.material = new THREE.MeshStandardMaterial({
       color: 0x777777,
       flatShading: true,
-      roughness: 0.4,
-      metalness: 0.85,
+      roughness: 1.0,
+      metalness: 0.0,
     });
 
     // Add material controls to GUI
@@ -170,18 +170,18 @@ export class TerrainRenderer {
    */
   setupLighting() {
     // Store light position components
-    const mainLightPos = { x: 2, y: 2, z: 1 };
+    const mainLightPos = { x: 4, y: -1.5, z: 0.5 };
     const fillLightPos = { x: -1, y: -1, z: 1 };
 
     // Create main directional light
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
     directionalLight.position
       .set(mainLightPos.x, mainLightPos.y, mainLightPos.z)
       .normalize();
     this.scene.add(directionalLight);
 
     // Create fill light
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0);
     directionalLight2.position
       .set(fillLightPos.x, fillLightPos.y, fillLightPos.z)
       .normalize();
