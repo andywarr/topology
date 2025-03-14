@@ -50,7 +50,7 @@ export class TerrainRenderer {
   /**
    * Draw terrain based on elevation data
    */
-  draw(elevationData) {
+  draw(elevationData, scale = 1) {
     if (!this.renderer) {
       this.initialize();
     }
@@ -68,7 +68,7 @@ export class TerrainRenderer {
     this.setupControls();
 
     // Create terrain geometry
-    this.createTerrain(elevationData);
+    this.createTerrain(elevationData, scale);
 
     // Setup lighting
     this.setupLighting();
@@ -121,7 +121,7 @@ export class TerrainRenderer {
   /**
    * Create terrain from elevation data
    */
-  createTerrain(elevationData) {
+  createTerrain(elevationData, scale) {
     // Create material
     this.material = new THREE.MeshStandardMaterial({
       color: 0x777777,
@@ -153,7 +153,7 @@ export class TerrainRenderer {
 
     for (let i = 0, l = flattenedElevationData.length; i < l; i++) {
       const elevation = this.processElevation(flattenedElevationData[i]);
-      vertices[i * 3 + 2] = elevation * 2;
+      vertices[i * 3 + 2] = elevation * scale;
     }
 
     // Update geometry

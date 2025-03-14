@@ -9,6 +9,7 @@ import elevationData from "./data/elevationData/sanFranciscoElevationData.js";
 
 const DEBUG = false;
 const SAMPLE_LENGTH = 0.5; // distance (kilometers) to sample elevation
+const SCALE = 2; // scale factor for elevation data
 
 // Initialize Google Maps API
 const loader = new Loader({
@@ -71,7 +72,7 @@ function initMap(google, elevationService, terrainRenderer, loadingUI) {
         loadingUI.updateProgress(progress);
       })
       .then((data) => {
-        terrainRenderer.draw(data);
+        terrainRenderer.draw(data, SCALE);
         loadingUI.hide(); // Hide after rendering is complete
       })
       .catch((error) => {
