@@ -5,9 +5,10 @@ import { ElevationService } from "./services/ElevationService.js";
 import { TerrainRenderer } from "./rendering/TerrainRenderer.js";
 import { LocationPresets } from "./utils/LocationPresets.js";
 import { LoadingUI } from "./components/LoadingUI.js";
+import { HomepageUI } from "./components/HomepageUI.js";
 import elevationData from "./data/elevationData/sanFranciscoElevationData.js";
 
-const DEBUG = true;
+const DEBUG = false;
 const SAMPLE_LENGTH = 0.5; // distance (kilometers) to sample elevation
 const SCALE = 2; // scale factor for elevation data
 
@@ -24,21 +25,38 @@ function initApp(google) {
   const terrainRenderer = new TerrainRenderer(SAMPLE_LENGTH);
   const loadingUI = new LoadingUI();
 
-  // Register screenshot shortcut - pass loadingUI as parameter
+  // Register screenshot shortcut
   registerKeyboardShortcuts(terrainRenderer, loadingUI);
 
-  if (!DEBUG) {
-    initMap(google, elevationService, terrainRenderer, loadingUI);
-  } else {
+  // Initialize homepage UI
+  const homepageUI = new HomepageUI((location) => {
+    if (!DEBUG) {
+      initMap(google, elevationService, terrainRenderer, loadingUI, location);
+    } else {
+      terrainRenderer.draw(elevationData);
+    }
+  });
+
+  // Optionally bypass the homepage in DEBUG mode
+  if (DEBUG) {
+    homepageUI.hide();
     terrainRenderer.draw(elevationData);
   }
 }
 
 // Initialize Maps interface
-function initMap(google, elevationService, terrainRenderer, loadingUI) {
+function initMap(
+  google,
+  elevationService,
+  terrainRenderer,
+  loadingUI,
+  customLocation
+) {
+  const location = customLocation || LocationPresets.sanFrancisco;
+
   const map = new google.maps.Map(document.getElementById("map"), {
-    zoom: LocationPresets.sanFrancisco.zoom,
-    center: LocationPresets.sanFrancisco.center,
+    zoom: location.zoom,
+    center: location.center,
     mapTypeId: "terrain",
   });
 
