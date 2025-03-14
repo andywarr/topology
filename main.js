@@ -1,5 +1,4 @@
 import "./style.css";
-import "./shadcn.css";
 import config from "./config";
 import { Loader } from "@googlemaps/js-api-loader";
 import { ElevationService } from "./services/ElevationService.js";
