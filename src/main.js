@@ -7,7 +7,7 @@ import { LocationPresets } from "./utils/LocationPresets.js";
 import { LoadingUI } from "./components/LoadingUI.js";
 import elevationData from "./data/elevationData/sanFranciscoElevationData.js";
 
-const DEBUG = false;
+const DEBUG = true;
 const SAMPLE_LENGTH = 0.5; // distance (kilometers) to sample elevation
 const SCALE = 2; // scale factor for elevation data
 
@@ -72,6 +72,7 @@ function initMap(google, elevationService, terrainRenderer, loadingUI) {
         loadingUI.updateProgress(progress);
       })
       .then((data) => {
+        console.log(data);
         terrainRenderer.draw(data, SCALE);
         loadingUI.hide(); // Hide after rendering is complete
       })
@@ -87,13 +88,32 @@ function registerKeyboardShortcuts(terrainRenderer) {
   document.addEventListener(
     "keydown",
     function (e) {
+      // Change to a different key combination that won't conflict with browser defaults
       if (
         (window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) &&
-        e.key === "s"
+        e.key === "e"
       ) {
         e.preventDefault();
-        const dataURL = terrainRenderer.getScreenshot();
-        window.open(dataURL);
+        // Add resolution multiplier (2x, 3x, 4x for higher resolution)
+        const resolutionMultiplier = 10; // Increase this value for higher resolution
+        const dataURL = terrainRenderer.getScreenshot(resolutionMultiplier);
+
+        // Add error handling and logging
+        if (!dataURL) {
+          console.error("Screenshot data is empty or undefined");
+          return;
+        }
+
+        // Create a download link instead of opening in a new window
+        const link = document.createElement("a");
+        link.download = `topology-screenshot-${resolutionMultiplier}x.png`;
+        link.href = dataURL;
+        link.click();
+
+        // Also log success
+        console.log(
+          `Screenshot captured at ${resolutionMultiplier}x resolution`
+        );
       }
     },
     false

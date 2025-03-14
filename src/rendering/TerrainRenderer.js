@@ -267,13 +267,53 @@ export class TerrainRenderer {
 
   /**
    * Get screenshot of current view
+   * @param {number} multiplier - Resolution multiplier (2 = double resolution, etc.)
+   * @returns {string} Data URL of screenshot
    */
-  getScreenshot() {
+  getScreenshot(multiplier = 1) {
     if (!this.renderer) {
       throw new Error("Renderer not initialized");
     }
 
-    return this.renderer.domElement.toDataURL();
+    // Store original dimensions
+    const originalWidth = window.innerWidth;
+    const originalHeight = window.innerHeight;
+
+    if (multiplier <= 1) {
+      // If no multiplier or invalid value, return standard resolution
+      return this.renderer.domElement.toDataURL();
+    }
+
+    // Store original pixel ratio
+    const originalPixelRatio = this.renderer.getPixelRatio();
+
+    try {
+      // Set renderer to higher resolution
+      this.renderer.setSize(
+        originalWidth * multiplier,
+        originalHeight * multiplier
+      );
+      this.renderer.setPixelRatio(originalPixelRatio);
+
+      // Update camera aspect ratio
+      this.camera.aspect = originalWidth / originalHeight;
+      this.camera.updateProjectionMatrix();
+
+      // Render high-resolution frame
+      this.renderer.render(this.scene, this.camera);
+
+      // Capture the screenshot
+      const dataURL = this.renderer.domElement.toDataURL();
+
+      return dataURL;
+    } finally {
+      // Always restore original size regardless of success or failure
+      this.renderer.setSize(originalWidth, originalHeight);
+      this.renderer.setPixelRatio(originalPixelRatio);
+      this.camera.aspect = originalWidth / originalHeight;
+      this.camera.updateProjectionMatrix();
+      this.render(); // Re-render at original size
+    }
   }
 
   /**
