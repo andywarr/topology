@@ -95,7 +95,7 @@ function registerKeyboardShortcuts(terrainRenderer) {
       ) {
         e.preventDefault();
         // Add resolution multiplier (2x, 3x, 4x for higher resolution)
-        const resolutionMultiplier = 10; // Increase this value for higher resolution
+        const resolutionMultiplier = 4; // Increase this value for higher resolution
         const dataURL = terrainRenderer.getScreenshot(resolutionMultiplier);
 
         // Add error handling and logging
