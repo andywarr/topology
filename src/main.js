@@ -1,11 +1,11 @@
-import "./style.css";
-import config from "./config";
+import "./styles/style.css";
+import config from "../config.js";
 import { Loader } from "@googlemaps/js-api-loader";
 import { ElevationService } from "./services/ElevationService.js";
 import { TerrainRenderer } from "./rendering/TerrainRenderer.js";
 import { LocationPresets } from "./utils/LocationPresets.js";
 import { LoadingUI } from "./components/LoadingUI.js";
-import elevationData from "./elevationData/sanFranciscoElevationData";
+import elevationData from "./data/elevationData/sanFranciscoElevationData.js";
 
 const DEBUG = false;
 const SAMPLE_LENGTH = 0.5; // distance (kilometers) to sample elevation
