@@ -320,6 +320,85 @@ export class TerrainRenderer {
   }
 
   /**
+   * Get screenshot of current view as Blob (better for large images)
+   * @param {number} multiplier - Resolution multiplier (2 = double resolution, etc.)
+   * @returns {Promise<Blob>} Promise resolving to image blob
+   */
+  getScreenshotBlob(multiplier = 1) {
+    if (!this.renderer) {
+      throw new Error("Renderer not initialized");
+    }
+
+    return new Promise((resolve, reject) => {
+      try {
+        // Store original dimensions
+        const originalWidth = window.innerWidth;
+        const originalHeight = window.innerHeight;
+
+        // Get WebGL context and check max texture size
+        const gl = this.renderer.getContext();
+        const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+
+        // Limit multiplier based on max texture size
+        const safeMultiplier = Math.min(
+          multiplier,
+          Math.floor(maxTextureSize / Math.max(originalWidth, originalHeight))
+        );
+
+        if (safeMultiplier < multiplier) {
+          console.warn(
+            `Reduced multiplier from ${multiplier}x to ${safeMultiplier}x due to WebGL limits`
+          );
+        }
+
+        // For standard resolution, just use the current canvas
+        if (safeMultiplier <= 1) {
+          this.renderer.domElement.toBlob((blob) => resolve(blob), "image/png");
+          return;
+        }
+
+        // Store original settings
+        const originalPixelRatio = this.renderer.getPixelRatio();
+
+        // Set renderer to higher resolution
+        this.renderer.setSize(
+          originalWidth * safeMultiplier,
+          originalHeight * safeMultiplier,
+          false // Don't update style
+        );
+
+        // Update camera aspect ratio
+        this.camera.aspect = originalWidth / originalHeight;
+        this.camera.updateProjectionMatrix();
+
+        // Render high-resolution frame
+        this.renderer.render(this.scene, this.camera);
+
+        // Get the blob representation
+        this.renderer.domElement.toBlob((blob) => {
+          // Restore original settings
+          this.renderer.setSize(originalWidth, originalHeight);
+          this.renderer.setPixelRatio(originalPixelRatio);
+          this.camera.aspect = originalWidth / originalHeight;
+          this.camera.updateProjectionMatrix();
+          this.render(); // Re-render at original size
+
+          resolve(blob);
+        }, "image/png");
+      } catch (error) {
+        // Restore original settings even in case of error
+        this.renderer.setSize(originalWidth, originalHeight);
+        this.renderer.setPixelRatio(originalPixelRatio);
+        this.camera.aspect = originalWidth / originalHeight;
+        this.camera.updateProjectionMatrix();
+        this.render();
+
+        reject(error);
+      }
+    });
+  }
+
+  /**
    * Process elevation value
    */
   processElevation(elevation) {

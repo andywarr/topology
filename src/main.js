@@ -24,8 +24,8 @@ function initApp(google) {
   const terrainRenderer = new TerrainRenderer(SAMPLE_LENGTH);
   const loadingUI = new LoadingUI();
 
-  // Register screenshot shortcut
-  registerKeyboardShortcuts(terrainRenderer);
+  // Register screenshot shortcut - pass loadingUI as parameter
+  registerKeyboardShortcuts(terrainRenderer, loadingUI);
 
   if (!DEBUG) {
     initMap(google, elevationService, terrainRenderer, loadingUI);
@@ -64,7 +64,10 @@ function initMap(google, elevationService, terrainRenderer, loadingUI) {
     };
 
     // Show loading UI before starting the data fetch
-    loadingUI.show();
+    loadingUI.show(
+      "Loading Elevation Data",
+      "Please wait while fetching elevation data."
+    );
     loadingUI.updateProgress(0);
 
     elevationService
@@ -84,36 +87,63 @@ function initMap(google, elevationService, terrainRenderer, loadingUI) {
 }
 
 // Register keyboard shortcut for saving screenshots
-function registerKeyboardShortcuts(terrainRenderer) {
+function registerKeyboardShortcuts(terrainRenderer, loadingUI) {
   document.addEventListener(
     "keydown",
     function (e) {
       // Change to a different key combination that won't conflict with browser defaults
       if (
         (window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) &&
-        e.key === "e"
+        e.key === "s"
       ) {
         e.preventDefault();
-        // Add resolution multiplier (2x, 3x, 4x for higher resolution)
-        const resolutionMultiplier = 4; // Increase this value for higher resolution
-        const dataURL = terrainRenderer.getScreenshot(resolutionMultiplier);
 
-        // Add error handling and logging
-        if (!dataURL) {
-          console.error("Screenshot data is empty or undefined");
-          return;
-        }
+        // Use LoadingUI with custom title and description for screenshot capture
+        loadingUI.show("Saving Image", "Please wait while saving the image.");
+        loadingUI.updateProgress(0);
 
-        // Create a download link instead of opening in a new window
-        const link = document.createElement("a");
-        link.download = `topology-screenshot-${resolutionMultiplier}x.png`;
-        link.href = dataURL;
-        link.click();
+        // Use a reasonable multiplier (4x is quite high resolution already)
+        const resolutionMultiplier = 4;
 
-        // Also log success
-        console.log(
-          `Screenshot captured at ${resolutionMultiplier}x resolution`
-        );
+        // Use the blob approach for better memory handling
+        terrainRenderer
+          .getScreenshotBlob(resolutionMultiplier)
+          .then((blob) => {
+            if (!blob) {
+              throw new Error("Failed to capture screenshot");
+            }
+
+            // Update progress
+            loadingUI.updateProgress(50);
+
+            // Create object URL from blob
+            const url = URL.createObjectURL(blob);
+
+            // Create download link
+            const link = document.createElement("a");
+            link.download = `topology-screenshot-${resolutionMultiplier}x.png`;
+            link.href = url;
+
+            // Update progress before initiating download
+            loadingUI.updateProgress(75);
+            link.click();
+
+            // Release the object URL when done
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+
+            // Show completion and hide after a short delay
+            loadingUI.updateProgress(100);
+            setTimeout(() => loadingUI.hide(), 500);
+
+            console.log(
+              `Screenshot captured at ${resolutionMultiplier}x resolution`
+            );
+          })
+          .catch((error) => {
+            console.error("Error saving image:", error);
+            loadingUI.show("Error", "Failed to save image.");
+            setTimeout(() => loadingUI.hide(), 2000);
+          });
       }
     },
     false

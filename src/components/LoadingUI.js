@@ -3,6 +3,8 @@ export class LoadingUI {
     this.element = null;
     this.progressBar = null;
     this.progressText = null;
+    this.titleElement = null;
+    this.descriptionElement = null;
     this.initialize();
   }
 
@@ -18,15 +20,17 @@ export class LoadingUI {
       "bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 p-6 shadow-lg w-[350px]";
 
     // Create title
-    const title = document.createElement("h3");
-    title.className =
+    this.titleElement = document.createElement("h3");
+    this.titleElement.className =
       "text-lg font-semibold text-slate-900 dark:text-slate-50 mb-2";
-    title.textContent = "Loading Elevation Data";
+    this.titleElement.textContent = "Loading Elevation Data";
 
     // Create description
-    const description = document.createElement("p");
-    description.className = "text-sm text-slate-500 dark:text-slate-400 mb-4";
-    description.textContent = "Please wait while fetching elevation data...";
+    this.descriptionElement = document.createElement("p");
+    this.descriptionElement.className =
+      "text-sm text-slate-500 dark:text-slate-400 mb-4";
+    this.descriptionElement.textContent =
+      "Please wait while fetching elevation data...";
 
     // Create progress container
     const progressContainer = document.createElement("div");
@@ -47,8 +51,8 @@ export class LoadingUI {
 
     // Assemble the elements
     progressContainer.appendChild(this.progressBar);
-    card.appendChild(title);
-    card.appendChild(description);
+    card.appendChild(this.titleElement);
+    card.appendChild(this.descriptionElement);
     card.appendChild(progressContainer);
     card.appendChild(this.progressText);
     this.element.appendChild(card);
@@ -57,7 +61,13 @@ export class LoadingUI {
     document.body.appendChild(this.element);
   }
 
-  show() {
+  show(title, description) {
+    if (title) {
+      this.titleElement.textContent = title;
+    }
+    if (description) {
+      this.descriptionElement.textContent = description;
+    }
     this.element.classList.remove("hidden");
   }
 
