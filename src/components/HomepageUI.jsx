@@ -53,10 +53,12 @@ export const HomepageUI = ({ onLocationSubmit }) => {
   if (!showHomepage) return null;
 
   return (
-    <div className="w-full max-w-md mx-auto p-4">
-      <Card className="border shadow-lg">
+    <div className="min-h-screen w-full flex items-center justify-center p-4">
+      <Card className="border shadow-lg w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Topology Viewer</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            Topology Renderer
+          </CardTitle>
         </CardHeader>
 
         <CardContent>
