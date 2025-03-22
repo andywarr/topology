@@ -59,7 +59,7 @@ export const HomepageUI = ({ onLocationSubmit }) => {
     },
     {
       name: "Tahoe",
-      mapUrl: "https://www.google.com/maps/@39.0968,-120.0324,10z",
+      mapUrl: "https://www.google.com/maps/@39.0968,-120.0324,12z",
     },
     {
       name: "Everest",
@@ -129,9 +129,7 @@ export const HomepageUI = ({ onLocationSubmit }) => {
               mapUrl={location.mapUrl}
               isSelected={selectedLocationUrl === location.mapUrl}
               onSelect={(url) => {
-                setSelectedLocationUrl(url);
-                form.setValue("mapUrl", url);
-                form.handleSubmit(handleFormSubmit)();
+                handleFormSubmit({ mapUrl: url });
               }}
             />
           ))}

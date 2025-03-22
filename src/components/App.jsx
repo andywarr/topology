@@ -22,23 +22,6 @@ const App = () => {
     libraries: ["places"],
   });
 
-  // App initialization
-  function initApp(google) {
-    const elevationService = new ElevationService(google, SAMPLE_LENGTH);
-    const terrainRenderer = new TerrainRenderer(SAMPLE_LENGTH);
-    const loadingUI = new LoadingUI();
-
-    // Register screenshot shortcut
-    registerKeyboardShortcuts(terrainRenderer, loadingUI);
-
-    // Initialize homepage UI
-    const homepageUI = new HomepageUI((location) => {
-      initMap(google, elevationService, terrainRenderer, loadingUI, location);
-    });
-
-    terrainRenderer.draw(elevationData);
-  }
-
   // Initialize Maps interface
   function initMap(
     google,
@@ -47,7 +30,7 @@ const App = () => {
     loadingUI,
     customLocation
   ) {
-    const location = customLocation || LocationPresets.sanFrancisco;
+    const location = customLocation;
 
     const map = new google.maps.Map(document.getElementById("map"), {
       zoom: location.zoom,
@@ -55,8 +38,11 @@ const App = () => {
       mapTypeId: "terrain",
     });
 
-    google.maps.event.addListener(map, "bounds_changed", function () {
+    // Function to fetch elevation data based on map bounds
+    const fetchElevationData = () => {
       const bounds = map.getBounds();
+      if (!bounds) return; // Safety check if bounds aren't ready
+
       const coordinates = {
         southWest: {
           lat: bounds.getSouthWest().lat(),
@@ -96,12 +82,14 @@ const App = () => {
           console.error("Error getting elevation data:", error);
           loadingUI.hide(); // Hide on error
         });
-    });
+    };
+
+    // Fetch data when bounds change
+    google.maps.event.addListener(map, "bounds_changed", fetchElevationData);
   }
 
   // Handle location submissions
   const handleLocationSubmit = (submittedLocation) => {
-    console.log("Location submitted:", submittedLocation);
     setLocation(submittedLocation);
     setShowHomepage(false);
 
