@@ -1,6 +1,6 @@
 import * as THREE from "three";
 // import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { GUI } from "dat.gui";
+// import { GUI } from "dat.gui";
 
 /**
  * TerrainRenderer - Handles 3D rendering of terrain using Three.js
@@ -35,7 +35,7 @@ export class TerrainRenderer {
     document.body.appendChild(this.renderer.domElement);
 
     // Create GUI
-    this.gui = new GUI();
+    // this.gui = new GUI();
 
     // Create scene
     this.scene = new THREE.Scene();
@@ -134,10 +134,10 @@ export class TerrainRenderer {
     });
 
     // Add material controls to GUI
-    const materialFolder = this.gui.addFolder("material");
-    materialFolder.add(this.material, "metalness", 0, 1);
-    materialFolder.add(this.material, "roughness", 0, 1);
-    materialFolder.open();
+    // const materialFolder = this.gui.addFolder("material");
+    // materialFolder.add(this.material, "metalness", 0, 1);
+    // materialFolder.add(this.material, "roughness", 0, 1);
+    // materialFolder.open();
 
     // Create geometry
     const geometry = new THREE.PlaneGeometry(
@@ -204,35 +204,35 @@ export class TerrainRenderer {
     };
 
     // Add lighting controls to GUI
-    const lightFolder = this.gui.addFolder("lighting");
-    lightFolder.add(directionalLight, "intensity", 0, 2).name("main light");
-    lightFolder.add(directionalLight2, "intensity", 0, 1).name("fill light");
+    // const lightFolder = this.gui.addFolder("lighting");
+    // lightFolder.add(directionalLight, "intensity", 0, 2).name("main light");
+    // lightFolder.add(directionalLight2, "intensity", 0, 1).name("fill light");
 
     // Add position controls for main light
-    const mainLightFolder = lightFolder.addFolder("main light position");
-    mainLightFolder
-      .add(mainLightPos, "x", -10, 10)
-      .onChange(updateMainLightPosition);
-    mainLightFolder
-      .add(mainLightPos, "y", -10, 10)
-      .onChange(updateMainLightPosition);
-    mainLightFolder
-      .add(mainLightPos, "z", -10, 10)
-      .onChange(updateMainLightPosition);
+    // const mainLightFolder = lightFolder.addFolder("main light position");
+    // mainLightFolder
+    //   .add(mainLightPos, "x", -10, 10)
+    //   .onChange(updateMainLightPosition);
+    // mainLightFolder
+    //   .add(mainLightPos, "y", -10, 10)
+    //   .onChange(updateMainLightPosition);
+    // mainLightFolder
+    //   .add(mainLightPos, "z", -10, 10)
+    //   .onChange(updateMainLightPosition);
 
     // Add position controls for fill light
-    const fillLightFolder = lightFolder.addFolder("fill light position");
-    fillLightFolder
-      .add(fillLightPos, "x", -10, 10)
-      .onChange(updateFillLightPosition);
-    fillLightFolder
-      .add(fillLightPos, "y", -10, 10)
-      .onChange(updateFillLightPosition);
-    fillLightFolder
-      .add(fillLightPos, "z", -10, 10)
-      .onChange(updateFillLightPosition);
+    // const fillLightFolder = lightFolder.addFolder("fill light position");
+    // fillLightFolder
+    //   .add(fillLightPos, "x", -10, 10)
+    //   .onChange(updateFillLightPosition);
+    // fillLightFolder
+    //   .add(fillLightPos, "y", -10, 10)
+    //   .onChange(updateFillLightPosition);
+    // fillLightFolder
+    //   .add(fillLightPos, "z", -10, 10)
+    //   .onChange(updateFillLightPosition);
 
-    lightFolder.open();
+    // lightFolder.open();
   }
 
   /**

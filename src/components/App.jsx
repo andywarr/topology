@@ -9,11 +9,10 @@ import elevationData from "../data/elevationData/sanFranciscoElevationData.js";
 import config from "../../config.js";
 
 const App = () => {
-  const DEBUG = false;
   const SAMPLE_LENGTH = 0.5; // distance (kilometers) to sample elevation
   const SCALE = 2; // scale factor for elevation data
 
-  const [showHomepage, setShowHomepage] = useState(!DEBUG);
+  const [showHomepage, setShowHomepage] = useState(true);
   const [location, setLocation] = useState(null);
 
   // Initialize Google Maps API
@@ -34,18 +33,10 @@ const App = () => {
 
     // Initialize homepage UI
     const homepageUI = new HomepageUI((location) => {
-      if (!DEBUG) {
-        initMap(google, elevationService, terrainRenderer, loadingUI, location);
-      } else {
-        terrainRenderer.draw(elevationData);
-      }
+      initMap(google, elevationService, terrainRenderer, loadingUI, location);
     });
 
-    // Optionally bypass the homepage in DEBUG mode
-    if (DEBUG) {
-      homepageUI.hide();
-      terrainRenderer.draw(elevationData);
-    }
+    terrainRenderer.draw(elevationData);
   }
 
   // Initialize Maps interface
@@ -125,17 +116,13 @@ const App = () => {
         // Register screenshot shortcut
         registerKeyboardShortcuts(terrainRenderer, loadingUI);
 
-        if (!DEBUG) {
-          initMap(
-            google,
-            elevationService,
-            terrainRenderer,
-            loadingUI,
-            submittedLocation
-          );
-        } else {
-          terrainRenderer.draw(elevationData);
-        }
+        initMap(
+          google,
+          elevationService,
+          terrainRenderer,
+          loadingUI,
+          submittedLocation
+        );
       })
       .catch((e) => {
         console.error("Failed to load Google Maps API:", e);
@@ -206,21 +193,18 @@ const App = () => {
     );
   }
 
-  // Handle DEBUG mode
   useEffect(() => {
-    if (DEBUG) {
-      setShowHomepage(false);
+    setShowHomepage(true);
 
-      loader
-        .load()
-        .then((google) => {
-          const terrainRenderer = new TerrainRenderer(SAMPLE_LENGTH);
-          terrainRenderer.draw(elevationData);
-        })
-        .catch((e) => {
-          console.error("Failed to load Google Maps API:", e);
-        });
-    }
+    loader
+      .load()
+      .then((google) => {
+        const terrainRenderer = new TerrainRenderer(SAMPLE_LENGTH);
+        terrainRenderer.draw(elevationData);
+      })
+      .catch((e) => {
+        console.error("Failed to load Google Maps API:", e);
+      });
   }, []);
 
   return showHomepage ? (

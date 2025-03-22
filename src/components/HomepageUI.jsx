@@ -7,6 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
 import { Input } from "./ui/input";
 import { useForm } from "react-hook-form";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import SuggestedLocation from "./SuggestedLocation";
 
 export const HomepageUI = ({ onLocationSubmit }) => {
   const [showHomepage, setShowHomepage] = useState(true);
@@ -34,6 +35,7 @@ export const HomepageUI = ({ onLocationSubmit }) => {
   });
 
   const [error, setError] = useState(null);
+  const [selectedLocationUrl, setSelectedLocationUrl] = useState(null);
 
   const handleFormSubmit = (data) => {
     const url = data.mapUrl.trim();
@@ -50,10 +52,25 @@ export const HomepageUI = ({ onLocationSubmit }) => {
     }
   };
 
+  const suggestedLocations = [
+    {
+      name: "San Francisco",
+      mapUrl: "https://www.google.com/maps/@37.7749,-122.4194,12z",
+    },
+    {
+      name: "Tahoe",
+      mapUrl: "https://www.google.com/maps/@39.0968,-120.0324,10z",
+    },
+    {
+      name: "Everest",
+      mapUrl: "https://www.google.com/maps/@27.9881,86.9250,12z",
+    },
+  ];
+
   if (!showHomepage) return null;
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 fixed inset-0 z-50">
       <Card className="border shadow-lg w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
@@ -99,6 +116,27 @@ export const HomepageUI = ({ onLocationSubmit }) => {
           </Form>
         </CardContent>
       </Card>
+
+      <div className="mt-6 w-full max-w-md">
+        <h3 className="text-center text-lg font-medium mb-3 text-white">
+          Suggested Locations
+        </h3>
+        <div className="grid grid-cols-3 gap-4">
+          {suggestedLocations.map((location, index) => (
+            <SuggestedLocation
+              key={index}
+              name={location.name}
+              mapUrl={location.mapUrl}
+              isSelected={selectedLocationUrl === location.mapUrl}
+              onSelect={(url) => {
+                setSelectedLocationUrl(url);
+                form.setValue("mapUrl", url);
+                form.handleSubmit(handleFormSubmit)();
+              }}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
