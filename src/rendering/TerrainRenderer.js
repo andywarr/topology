@@ -16,10 +16,14 @@ export class TerrainRenderer {
     this.maxDistance = null;
     this.includeOceanFloor = false;
     this.sampleLength = sampleLength;
+    this.mesh = null;
 
     // Bind methods
     // this.animate = this.animate.bind(this);
     this.render = this.render.bind(this);
+
+    // Initialize scene, renderer, camera once
+    this.initScene();
   }
 
   /**
@@ -48,6 +52,29 @@ export class TerrainRenderer {
   }
 
   /**
+   * Initialize the scene
+   */
+  initScene() {
+    this.initialize();
+  }
+
+  /**
+   * Clear existing mesh from scene
+   */
+  clearMesh() {
+    if (this.mesh && this.scene) {
+      this.scene.remove(this.mesh);
+      if (this.mesh.geometry) {
+        this.mesh.geometry.dispose();
+      }
+      if (this.mesh.material) {
+        this.mesh.material.dispose();
+      }
+      this.mesh = null;
+    }
+  }
+
+  /**
    * Draw terrain based on elevation data
    */
   draw(elevationData, scale = 1) {
@@ -55,11 +82,8 @@ export class TerrainRenderer {
       this.initialize();
     }
 
-    // Clear previous terrain if it exists
-    if (this.terrain) {
-      this.scene.remove(this.terrain);
-      this.terrain.geometry.dispose();
-    }
+    // Clear existing mesh before creating a new one
+    this.clearMesh();
 
     // Setup camera
     this.setupCamera(elevationData);
@@ -164,8 +188,8 @@ export class TerrainRenderer {
     geometry.computeVertexNormals();
 
     // Create mesh and add to scene
-    this.terrain = new THREE.Mesh(geometry, this.material);
-    this.scene.add(this.terrain);
+    this.mesh = new THREE.Mesh(geometry, this.material);
+    this.scene.add(this.mesh);
   }
 
   /**

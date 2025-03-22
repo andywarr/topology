@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { HomepageUI } from "./HomepageUI";
 // Import other utilities and services
 import { Loader } from "@googlemaps/js-api-loader";
@@ -14,6 +14,7 @@ const App = () => {
 
   const [showHomepage, setShowHomepage] = useState(true);
   const [location, setLocation] = useState(null);
+  const terrainRendererRef = useRef(null);
 
   // Initialize Google Maps API
   const loader = new Loader({
@@ -98,16 +99,21 @@ const App = () => {
       .load()
       .then((google) => {
         const elevationService = new ElevationService(google, SAMPLE_LENGTH);
-        const terrainRenderer = new TerrainRenderer(SAMPLE_LENGTH);
+
+        // Use existing renderer instance or create a new one
+        if (!terrainRendererRef.current) {
+          terrainRendererRef.current = new TerrainRenderer(SAMPLE_LENGTH);
+        }
+
         const loadingUI = new LoadingUI();
 
         // Register screenshot shortcut
-        registerKeyboardShortcuts(terrainRenderer, loadingUI);
+        registerKeyboardShortcuts(terrainRendererRef.current, loadingUI);
 
         initMap(
           google,
           elevationService,
-          terrainRenderer,
+          terrainRendererRef.current,
           loadingUI,
           submittedLocation
         );
@@ -187,8 +193,11 @@ const App = () => {
     loader
       .load()
       .then((google) => {
-        const terrainRenderer = new TerrainRenderer(SAMPLE_LENGTH);
-        terrainRenderer.draw(elevationData);
+        // Create the renderer once and store in ref
+        if (!terrainRendererRef.current) {
+          terrainRendererRef.current = new TerrainRenderer(SAMPLE_LENGTH);
+        }
+        terrainRendererRef.current.draw(elevationData);
       })
       .catch((e) => {
         console.error("Failed to load Google Maps API:", e);
