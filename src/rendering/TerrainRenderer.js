@@ -18,6 +18,9 @@ export class TerrainRenderer {
     this.sampleLength = sampleLength;
     this.mesh = null;
 
+    // Add arrays to track lights
+    this.lights = [];
+
     // Bind methods
     // this.animate = this.animate.bind(this);
     this.render = this.render.bind(this);
@@ -75,6 +78,22 @@ export class TerrainRenderer {
   }
 
   /**
+   * Clear existing elements from scene
+   */
+  clearScene() {
+    // Clear existing mesh
+    this.clearMesh();
+
+    // Clear existing lights
+    if (this.scene && this.lights.length > 0) {
+      this.lights.forEach((light) => {
+        this.scene.remove(light);
+      });
+      this.lights = [];
+    }
+  }
+
+  /**
    * Draw terrain based on elevation data
    */
   draw(elevationData, scale = 1) {
@@ -82,8 +101,8 @@ export class TerrainRenderer {
       this.initialize();
     }
 
-    // Clear existing mesh before creating a new one
-    this.clearMesh();
+    // Clear existing mesh and lights before creating new ones
+    this.clearScene();
 
     // Setup camera
     this.setupCamera(elevationData);
@@ -206,6 +225,7 @@ export class TerrainRenderer {
       .set(mainLightPos.x, mainLightPos.y, mainLightPos.z)
       .normalize();
     this.scene.add(directionalLight);
+    this.lights.push(directionalLight);
 
     // Create fill light
     const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0);
@@ -213,6 +233,7 @@ export class TerrainRenderer {
       .set(fillLightPos.x, fillLightPos.y, fillLightPos.z)
       .normalize();
     this.scene.add(directionalLight2);
+    this.lights.push(directionalLight2);
 
     // Functions to update light positions
     const updateMainLightPosition = () => {
