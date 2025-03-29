@@ -5,7 +5,9 @@ import { Loader } from "@googlemaps/js-api-loader";
 import { ElevationService } from "../services/ElevationService.js";
 import { TerrainRenderer } from "../rendering/TerrainRenderer.js";
 import { LoadingUI } from "./LoadingUI.js";
-import elevationData from "../data/elevationData/sanFranciscoElevationData.js";
+import sanFranciscoElevationData from "../data/elevationData/sanFranciscoElevationData.js";
+import everestElevationData from "../data/elevationData/everestElevationData.js";
+import tahoeElevationData from "../data/elevationData/tahoeElevationData.js";
 import config from "../../config.js";
 
 const App = () => {
@@ -15,6 +17,13 @@ const App = () => {
   const [showHomepage, setShowHomepage] = useState(true);
   const [location, setLocation] = useState(null);
   const terrainRendererRef = useRef(null);
+
+  // Map location names to their preloaded data
+  const preloadedData = {
+    "San Francisco": sanFranciscoElevationData,
+    Tahoe: tahoeElevationData,
+    Everest: everestElevationData,
+  };
 
   // Initialize Google Maps API
   const loader = new Loader({
@@ -29,7 +38,8 @@ const App = () => {
     elevationService,
     terrainRenderer,
     loadingUI,
-    customLocation
+    customLocation,
+    preloadedElevationData = null
   ) {
     const location = customLocation;
 
@@ -38,6 +48,14 @@ const App = () => {
       center: location.center,
       mapTypeId: "terrain",
     });
+
+    // If we have preloaded data, use it right away
+    if (preloadedElevationData) {
+      console.log("Using preloaded elevation data");
+      terrainRenderer.draw(preloadedElevationData, SCALE);
+
+      return; // Skip setting up the fetch event listener
+    }
 
     // Function to fetch elevation data based on map bounds
     const fetchElevationData = () => {
@@ -110,12 +128,18 @@ const App = () => {
         // Register screenshot shortcut
         registerKeyboardShortcuts(terrainRendererRef.current, loadingUI);
 
+        // Check if this is one of our preloaded locations
+        const preloadedElevationData = submittedLocation.name
+          ? preloadedData[submittedLocation.name]
+          : null;
+
         initMap(
           google,
           elevationService,
           terrainRendererRef.current,
           loadingUI,
-          submittedLocation
+          submittedLocation,
+          preloadedElevationData
         );
       })
       .catch((e) => {
@@ -197,7 +221,7 @@ const App = () => {
         if (!terrainRendererRef.current) {
           terrainRendererRef.current = new TerrainRenderer(SAMPLE_LENGTH);
         }
-        terrainRendererRef.current.draw(elevationData);
+        terrainRendererRef.current.draw(sanFranciscoElevationData, SCALE);
       })
       .catch((e) => {
         console.error("Failed to load Google Maps API:", e);
