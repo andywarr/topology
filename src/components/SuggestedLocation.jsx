@@ -4,10 +4,8 @@ import { Card, CardContent } from "./ui/card";
 const SuggestedLocation = ({ name, mapUrl, onSelect, isSelected = false }) => {
   return (
     <Card
-      className={`cursor-pointer transition-all ${
-        isSelected
-          ? "shadow-md border-2 border-zinc-50"
-          : "hover:shadow-lg border-zinc-100"
+      className={`border-2 cursor-pointer transition-all ${
+        isSelected ? "shadow-md bg-zinc-50" : "bg-zinc-200"
       }`}
       onClick={() => {
         if (!isSelected) {
