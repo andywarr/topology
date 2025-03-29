@@ -12,7 +12,7 @@ export class LoadingUI {
     // Create loading overlay
     this.element = document.createElement("div");
     this.element.className =
-      "fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden";
+      "fixed inset-0 flex items-center justify-center z-50 hidden";
 
     // Create loading card
     const card = document.createElement("div");
