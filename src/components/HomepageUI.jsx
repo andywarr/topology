@@ -28,7 +28,7 @@ export const HomepageUI = ({ onLocationSubmit }) => {
 
   const [showHomepage, setShowHomepage] = useState(true);
   const [selectedLocationUrl, setSelectedLocationUrl] = useState(
-    suggestedLocations.[0].mapUrl
+    suggestedLocations[0].mapUrl
   );
   const [error, setError] = useState(null);
 
