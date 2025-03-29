@@ -11,7 +11,27 @@ import SuggestedLocation from "./SuggestedLocation";
 import sanFranciscoElevationData from "../data/elevationData/sanFranciscoElevationData.js";
 
 export const HomepageUI = ({ onLocationSubmit }) => {
+  const suggestedLocations = [
+    {
+      name: "San Francisco",
+      mapUrl: "https://www.google.com/maps/@37.7749,-122.4194,12z",
+    },
+    {
+      name: "Tahoe",
+      mapUrl: "https://www.google.com/maps/@39.0968,-120.0324,12z",
+    },
+    {
+      name: "Everest",
+      mapUrl: "https://www.google.com/maps/@27.9881,86.9250,12z",
+    },
+  ];
+
   const [showHomepage, setShowHomepage] = useState(true);
+  const [selectedLocationUrl, setSelectedLocationUrl] = useState(
+    suggestedLocations.[0].mapUrl
+  );
+  const [error, setError] = useState(null);
+
   const mapContainer = document.getElementById("map");
   const originalMapDisplay = mapContainer
     ? mapContainer.style.display
@@ -34,11 +54,6 @@ export const HomepageUI = ({ onLocationSubmit }) => {
       mapUrl: "",
     },
   });
-
-  const [error, setError] = useState(null);
-  const [selectedLocationUrl, setSelectedLocationUrl] = useState(
-    sanFranciscoElevationData.mapUrl
-  );
 
   const handleFormSubmit = (data, isPreview = false) => {
     const url = data.mapUrl.trim();
@@ -63,21 +78,6 @@ export const HomepageUI = ({ onLocationSubmit }) => {
       }
     }
   };
-
-  const suggestedLocations = [
-    {
-      name: "San Francisco",
-      mapUrl: "https://www.google.com/maps/@37.7749,-122.4194,12z",
-    },
-    {
-      name: "Tahoe",
-      mapUrl: "https://www.google.com/maps/@39.0968,-120.0324,12z",
-    },
-    {
-      name: "Everest",
-      mapUrl: "https://www.google.com/maps/@27.9881,86.9250,12z",
-    },
-  ];
 
   if (!showHomepage) return null;
 
