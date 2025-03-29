@@ -8,6 +8,7 @@ import { Input } from "./ui/input";
 import { useForm } from "react-hook-form";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import SuggestedLocation from "./SuggestedLocation";
+import sanFranciscoElevationData from "../data/elevationData/sanFranciscoElevationData.js";
 
 export const HomepageUI = ({ onLocationSubmit }) => {
   const [showHomepage, setShowHomepage] = useState(true);
@@ -35,8 +36,9 @@ export const HomepageUI = ({ onLocationSubmit }) => {
   });
 
   const [error, setError] = useState(null);
-  const [selectedLocationUrl, setSelectedLocationUrl] = useState(null);
-  const [hoveredLocationUrl, setHoveredLocationUrl] = useState(null);
+  const [selectedLocationUrl, setSelectedLocationUrl] = useState(
+    sanFranciscoElevationData.mapUrl
+  );
 
   const handleFormSubmit = (data, isPreview = false) => {
     const url = data.mapUrl.trim();
@@ -50,6 +52,8 @@ export const HomepageUI = ({ onLocationSubmit }) => {
         if (!isPreview) {
           setShowHomepage(false);
         }
+
+        setSelectedLocationUrl(url);
 
         onLocationSubmit(location, isPreview);
       } else {
@@ -78,7 +82,7 @@ export const HomepageUI = ({ onLocationSubmit }) => {
   if (!showHomepage) return null;
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 fixed inset-0 z-50">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 fixed inset-0 z-50 transition-opacity duration-300 opacity-100">
       <Card className="border shadow-lg w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
@@ -97,7 +101,9 @@ export const HomepageUI = ({ onLocationSubmit }) => {
 
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(handleFormSubmit)}
+              onSubmit={form.handleSubmit((data) =>
+                handleFormSubmit(data, false)
+              )}
               className="space-y-4"
             >
               <FormField
@@ -130,18 +136,36 @@ export const HomepageUI = ({ onLocationSubmit }) => {
           Suggested Locations
         </h3>
         <div className="grid grid-cols-3 gap-4">
-          {suggestedLocations.map((location) => (
+          {suggestedLocations.map((location, index) => (
             <SuggestedLocation
               key={location.name}
               name={location.name}
               mapUrl={location.mapUrl}
               isSelected={selectedLocationUrl === location.mapUrl}
-              isHovered={hoveredLocationUrl === location.mapUrl}
               onSelect={(url, isPreview) => {
-                handleFormSubmit(
-                  { mapUrl: url, name: location.name },
-                  isPreview
-                );
+                if (!isPreview) {
+                  // Only set opacity to 0 if not in preview mode
+                  const parentElement = document.querySelector(
+                    ".min-h-screen.w-full.flex"
+                  );
+                  if (parentElement) {
+                    parentElement.style.opacity = "0";
+                  }
+
+                  // Small delay to allow opacity transition to complete
+                  setTimeout(() => {
+                    handleFormSubmit(
+                      { mapUrl: url, name: location.name },
+                      isPreview
+                    );
+                  }, 300); // Match the duration-300 transition time
+                } else {
+                  // If in preview mode, immediately handle form submission without hiding UI
+                  handleFormSubmit(
+                    { mapUrl: url, name: location.name },
+                    isPreview
+                  );
+                }
               }}
             />
           ))}

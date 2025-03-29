@@ -6,8 +6,8 @@ const SuggestedLocation = ({ name, mapUrl, onSelect, isSelected = false }) => {
     <Card
       className={`cursor-pointer transition-all ${
         isSelected
-          ? "shadow-md border-2 border-primary bg-primary/10"
-          : "hover:shadow-md"
+          ? "shadow-md border-2 border-zinc-50"
+          : "hover:shadow-lg border-zinc-100"
       }`}
       onClick={() => {
         if (!isSelected) {
