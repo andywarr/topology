@@ -108,9 +108,12 @@ const App = () => {
   }
 
   // Handle location submissions
-  const handleLocationSubmit = (submittedLocation) => {
+  const handleLocationSubmit = (submittedLocation, isPreview = false) => {
     setLocation(submittedLocation);
-    setShowHomepage(false);
+
+    if (!isPreview) {
+      setShowHomepage(false);
+    }
 
     // Start the application
     loader
