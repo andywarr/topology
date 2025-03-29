@@ -11,7 +11,12 @@ const SuggestedLocation = ({ name, mapUrl, onSelect, isSelected = false }) => {
       }`}
       onClick={() => {
         if (!isSelected) {
-          onSelect(mapUrl);
+          onSelect(mapUrl, false);
+        }
+      }}
+      onMouseOver={() => {
+        if (!isSelected) {
+          onSelect(mapUrl, true);
         }
       }}
     >

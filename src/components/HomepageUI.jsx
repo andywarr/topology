@@ -38,7 +38,7 @@ export const HomepageUI = ({ onLocationSubmit }) => {
   const [selectedLocationUrl, setSelectedLocationUrl] = useState(null);
   const [hoveredLocationUrl, setHoveredLocationUrl] = useState(null);
 
-  const handleFormSubmit = (data) => {
+  const handleFormSubmit = (data, isPreview = false) => {
     const url = data.mapUrl.trim();
     if (url) {
       const location = GoogleMapsUrlParser.parseUrl(url);
@@ -47,39 +47,17 @@ export const HomepageUI = ({ onLocationSubmit }) => {
         if (data.name) {
           location.name = data.name;
         }
-        setShowHomepage(false);
-        onLocationSubmit(location);
+        if (!isPreview) {
+          setShowHomepage(false);
+        }
+
+        onLocationSubmit(location, isPreview);
       } else {
         setError(
           "Invalid Google Maps URL. Please check the format and try again."
         );
       }
     }
-  };
-
-  const handleSuggestionClick = (data) => {
-    const url = data.mapUrl.trim();
-    if (url) {
-      const location = GoogleMapsUrlParser.parseUrl(url);
-      if (location) {
-        setShowHomepage(false);
-        onLocationSubmit(location);
-      } else {
-        setError(
-          "Invalid Google Maps URL. Please check the format and try again."
-        );
-      }
-    }
-  };
-
-  // Add a preview function that doesn't hide the homepage
-  const handleLocationHover = (url, name) => {
-    setHoveredLocationUrl(url);
-    // Here you could add additional preview functionality
-  };
-
-  const handleLocationHoverEnd = () => {
-    setHoveredLocationUrl(null);
   };
 
   const suggestedLocations = [
@@ -159,13 +137,12 @@ export const HomepageUI = ({ onLocationSubmit }) => {
               mapUrl={location.mapUrl}
               isSelected={selectedLocationUrl === location.mapUrl}
               isHovered={hoveredLocationUrl === location.mapUrl}
-              onSelect={(url) => {
-                handleFormSubmit({ mapUrl: url, name: location.name });
+              onSelect={(url, isPreview) => {
+                handleFormSubmit(
+                  { mapUrl: url, name: location.name },
+                  isPreview
+                );
               }}
-              onHover={() =>
-                handleLocationHover(location.mapUrl, location.name)
-              }
-              onHoverEnd={handleLocationHoverEnd}
             />
           ))}
         </div>
