@@ -155,11 +155,11 @@ const App = () => {
     document.addEventListener(
       "keydown",
       function (e) {
-        // Change to a different key combination that won't conflict with browser defaults
-        if (
-          (window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) &&
-          e.key === "s"
-        ) {
+        const isMac = window.navigator.platform.match("Mac");
+        const modifierKey = isMac ? e.metaKey : e.ctrlKey;
+
+        // Standard screenshot (Cmd+S / Ctrl+S)
+        if (modifierKey && e.key === "s" && !e.shiftKey) {
           e.preventDefault();
 
           // Use LoadingUI with custom title and description for screenshot capture
@@ -206,6 +206,48 @@ const App = () => {
             .catch((error) => {
               console.error("Error saving image:", error);
               loadingUI.show("Error", "Failed to save image.");
+              setTimeout(() => loadingUI.hide(), 2000);
+            });
+        }
+
+        // SVG export with Cmd+Shift+S / Ctrl+Shift+S
+        if (modifierKey && (e.key === "S" || (e.key === "s" && e.shiftKey))) {
+          e.preventDefault();
+
+          loadingUI.show("Exporting SVG", "Please wait while creating SVG.");
+          loadingUI.updateProgress(0);
+
+          terrainRenderer
+            .getSvgBlob()
+            .then((svgBlob) => {
+              if (!svgBlob) {
+                throw new Error("Failed to generate SVG");
+              }
+
+              loadingUI.updateProgress(50);
+
+              // Create object URL from blob
+              const url = URL.createObjectURL(svgBlob);
+
+              // Create download link
+              const link = document.createElement("a");
+              link.download = `topology-export.svg`;
+              link.href = url;
+
+              loadingUI.updateProgress(75);
+              link.click();
+
+              // Release the object URL when done
+              setTimeout(() => URL.revokeObjectURL(url), 100);
+
+              loadingUI.updateProgress(100);
+              setTimeout(() => loadingUI.hide(), 500);
+
+              console.log("SVG export complete");
+            })
+            .catch((error) => {
+              console.error("Error exporting SVG:", error);
+              loadingUI.show("Error", "Failed to export SVG.");
               setTimeout(() => loadingUI.hide(), 2000);
             });
         }

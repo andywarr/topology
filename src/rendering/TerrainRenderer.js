@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { SVGRenderer } from "three/examples/jsm/renderers/SVGRenderer";
 // import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 // import { GUI } from "dat.gui";
 
@@ -438,6 +439,39 @@ export class TerrainRenderer {
         this.camera.updateProjectionMatrix();
         this.render();
 
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Get SVG representation of the current view as Blob
+   * @returns {Promise<Blob>} Promise resolving to SVG blob
+   */
+  getSvgBlob() {
+    return new Promise((resolve, reject) => {
+      try {
+        // Create a new SVG renderer (use the imported SVGRenderer)
+        const svgRenderer = new SVGRenderer();
+        svgRenderer.setSize(
+          this.renderer.getSize(new THREE.Vector2()).width,
+          this.renderer.getSize(new THREE.Vector2()).height
+        );
+
+        // Render the scene
+        svgRenderer.render(this.scene, this.camera);
+
+        // Get SVG content
+        const svgElement = svgRenderer.domElement;
+        const svgContent =
+          svgElement.outerHTML ||
+          new XMLSerializer().serializeToString(svgElement);
+
+        // Create blob from SVG
+        const blob = new Blob([svgContent], { type: "image/svg+xml" });
+        resolve(blob);
+      } catch (error) {
+        console.error("Error generating SVG:", error);
         reject(error);
       }
     });
