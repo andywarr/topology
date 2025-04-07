@@ -8,9 +8,7 @@ const SuggestedLocation = ({ name, mapUrl, onSelect, isSelected = false }) => {
         isSelected ? "shadow-md bg-zinc-50" : "bg-zinc-200"
       }`}
       onClick={() => {
-        if (!isSelected) {
-          onSelect(mapUrl, false);
-        }
+        onSelect(mapUrl, false);
       }}
       onMouseOver={() => {
         if (!isSelected) {
