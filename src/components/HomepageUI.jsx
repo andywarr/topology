@@ -82,7 +82,10 @@ export const HomepageUI = ({ onLocationSubmit }) => {
   if (!showHomepage) return null;
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 fixed inset-0 z-50 transition-opacity duration-300 opacity-100">
+    <div
+      id="homepage-container"
+      className="min-h-screen w-full flex flex-col items-center justify-center p-4 fixed inset-0 z-50 transition-opacity duration-300 opacity-100"
+    >
       <Card className="border shadow-lg w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
@@ -143,22 +146,27 @@ export const HomepageUI = ({ onLocationSubmit }) => {
               mapUrl={location.mapUrl}
               isSelected={selectedLocationUrl === location.mapUrl}
               onSelect={(url, isPreview) => {
+                console.log(url, isPreview);
                 if (!isPreview) {
-                  // Only set opacity to 0 if not in preview mode
-                  const parentElement = document.querySelector(
-                    ".min-h-screen.w-full.flex"
-                  );
-                  if (parentElement) {
-                    parentElement.style.opacity = "0";
-                  }
+                  const container =
+                    document.getElementById("homepage-container");
+                  if (container) {
+                    container.style.opacity = "0";
 
-                  // Small delay to allow opacity transition to complete
-                  setTimeout(() => {
+                    // Small delay to allow opacity transition to complete
+                    setTimeout(() => {
+                      handleFormSubmit(
+                        { mapUrl: url, name: location.name },
+                        isPreview
+                      );
+                    }, 300); // Match the duration-300 transition time
+                  } else {
+                    // Fallback in case container not found
                     handleFormSubmit(
                       { mapUrl: url, name: location.name },
                       isPreview
                     );
-                  }, 300); // Match the duration-300 transition time
+                  }
                 } else {
                   // If in preview mode, immediately handle form submission without hiding UI
                   handleFormSubmit(
